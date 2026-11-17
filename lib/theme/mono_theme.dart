@@ -70,13 +70,15 @@ class MonoPalette {
     textMuted: Color(0x99111111),
     accent: Color(0xFF111111),
   );
+  // Based on the charcoal and amber Plex Web reference palette. Keep the
+  // dark slot free so existing users can still change appearance in Settings.
   static const dark = MonoPalette(
-    bg: Color(0xFF0E0F12),
-    surface: Color(0xFF15171C),
-    outline: Color(0x1FFFFFFF),
-    text: Color(0xFFEDEDED),
-    textMuted: Color(0x99EDEDED),
-    accent: Color(0xFFEDEDED),
+    bg: Color(0xFF1E1E1E),
+    surface: Color(0xFF1A1A1A),
+    outline: Color(0xFF383838),
+    text: Color(0xFFF3F3F3),
+    textMuted: Color(0xFF999999),
+    accent: Color(0xFFE5A00D),
   );
   static const oled = MonoPalette(
     bg: Color(0xFF000000), // Pure black for OLED
@@ -240,6 +242,7 @@ ThemeData monoThemeUncached(MonoPalette palette) => _buildMonoTheme(palette, pla
 ThemeData _buildMonoTheme(MonoPalette c, {required TargetPlatform platform}) {
   final brightness = c.brightness;
   final onAccent = c.onAccent;
+  final isWindowsWeb = platform == TargetPlatform.windows;
   final clickableCursor = WidgetStateProperty.resolveWith<MouseCursor>(
     (states) => states.contains(WidgetState.disabled) ? MouseCursor.defer : SystemMouseCursors.click,
   );
@@ -256,7 +259,9 @@ ThemeData _buildMonoTheme(MonoPalette c, {required TargetPlatform platform}) {
     foregroundColor: WidgetStateProperty.resolveWith(
       (states) => states.contains(WidgetState.disabled) ? c.text.withValues(alpha: 0.38) : onAccent,
     ),
-    shape: const WidgetStatePropertyAll(StadiumBorder()),
+    shape: WidgetStatePropertyAll(
+      isWindowsWeb ? const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))) : const StadiumBorder(),
+    ),
   );
 
   final base = ThemeData(
@@ -329,7 +334,7 @@ ThemeData _buildMonoTheme(MonoPalette c, {required TargetPlatform platform}) {
       color: c.surface,
       elevation: 0,
       margin: .zero,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14))),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(isWindowsWeb ? 4 : 14)),
     ),
     inputDecorationTheme: _inputDecorationTheme(c.text, c.textMuted),
     elevatedButtonTheme: ElevatedButtonThemeData(style: buttonStyle),
@@ -385,11 +390,11 @@ ThemeData _buildMonoTheme(MonoPalette c, {required TargetPlatform platform}) {
   return base.copyWith(
     extensions: [
       MonoTokens(
-        radiusSm: 8,
-        radiusMd: 12,
-        radiusLg: 20,
-        radiusXs: 5,
-        groupGap: 2,
+        radiusSm: isWindowsWeb ? 4 : 8,
+        radiusMd: isWindowsWeb ? 6 : 12,
+        radiusLg: isWindowsWeb ? 6 : 20,
+        radiusXs: isWindowsWeb ? 2 : 5,
+        groupGap: isWindowsWeb ? 4 : 2,
         space: 12,
         fast: const Duration(milliseconds: 120),
         normal: const Duration(milliseconds: 200),
