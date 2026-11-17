@@ -94,7 +94,7 @@ jobs:
               esac
             done < <(git diff -z --name-only --diff-filter=ACMR "$base" HEAD -- lib test)
             if (("${#files[@]}" > 0)); then
-              dart format --output=none --set-exit-if-changed "${files[@]}"
+              dart format --page-width=120 --output=none --set-exit-if-changed "${files[@]}"
             fi
           else
             paths=(lib)
