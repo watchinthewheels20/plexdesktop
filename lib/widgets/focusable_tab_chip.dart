@@ -150,6 +150,39 @@ class _FocusableTabChipState extends State<FocusableTabChip> with FocusableChipS
       ),
     );
 
+    // The Windows fork follows Plex Web's flat underline navigation rather
+    // than Plezy's Material pill tabs. Preserve the existing focus semantics.
+    if (Theme.of(context).platform == TargetPlatform.windows && widget.topImage == null) {
+      return FocusBuilders.buildFocusableChip(
+        context: context,
+        focusNode: focusNode,
+        onKeyEvent: _handleKeyEvent,
+        onTap: widget.onSelect,
+        semanticLabel: widget.label,
+        selected: widget.isSelected,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        backgroundColor: Colors.transparent,
+        borderRadius: 0,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.label,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: widget.isSelected || showFocus ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              height: 2,
+              color: widget.isSelected ? colorScheme.primary : Colors.transparent,
+            ),
+          ],
+        ),
+      );
+    }
+
     final hasImage = widget.topImage != null;
     return FocusBuilders.buildFocusableChip(
       context: context,
