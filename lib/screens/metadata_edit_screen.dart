@@ -44,6 +44,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
   bool _isLoading = true;
   bool _isCommitting = false;
   int _loadGeneration = 0;
+  String _selectedWebSection = 'basic';
 
   @override
   void initState() {
@@ -59,6 +60,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
     _adapter = null;
     _draft = null;
     _isLoading = true;
+    _selectedWebSection = 'basic';
     _loadMetadata();
   }
 
@@ -310,6 +312,69 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
     }
 
     final sections = adapter.schemaFor(draft).where((section) => section.fields.isNotEmpty).toList();
+    if (Theme.of(context).platform == TargetPlatform.windows &&
+        MediaQuery.sizeOf(context).width >= 740) {
+      final selectedSection = sections.where((section) => section.id == _selectedWebSection).firstOrNull ??
+          sections.first;
+      return PopScope(
+        canPop: !_isCommitting,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text('Edit ${widget.metadata.displayTitle}'),
+            actions: [
+              if (_isCommitting)
+                const Padding(padding: EdgeInsets.all(12), child: LoadingIndicatorBox(size: 24))
+              else
+                TextButton.icon(
+                  onPressed: _hasChanges ? _save : null,
+                  icon: const Icon(Icons.check),
+                  label: Text(t.common.save),
+                ),
+              const SizedBox(width: 16),
+            ],
+          ),
+          body: Row(
+            children: [
+              SizedBox(
+                width: 225,
+                child: Material(
+                  color: const Color(0xFF171717),
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    children: [
+                      for (final section in sections)
+                        ListTile(
+                          title: Text(
+                            section.title,
+                            style: TextStyle(
+                              color: section.id == selectedSection.id
+                                  ? const Color(0xFFE5A00D)
+                                  : Colors.white70,
+                              fontWeight: section.id == selectedSection.id
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                          selected: section.id == selectedSection.id,
+                          selectedTileColor: const Color(0x33292929),
+                          onTap: () => setState(() => _selectedWebSection = section.id),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const VerticalDivider(width: 1),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(30, 24, 30, 36),
+                  child: _buildSectionCard(adapter, draft, selectedSection),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     return PopScope(
       canPop: !_isCommitting,
       child: FocusedScrollScaffold(
