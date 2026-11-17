@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/mono_tokens.dart';
 import '../utils/platform_detector.dart';
 import 'app_icon.dart';
@@ -26,7 +27,8 @@ class SettingsSectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(color: tokens(context).textMuted, fontWeight: .w600),
+        style: Theme.of(context).textTheme.labelLarge
+            ?.copyWith(color: tokens(context).textMuted, fontWeight: .w600),
       ),
     );
   }
@@ -97,7 +99,9 @@ class SettingsGroup extends StatelessWidget {
         Padding(
           padding: margin,
           child: ListTileTheme.merge(
-            visualDensity: PlatformDetector.isAutomotive() ? VisualDensity.standard : const VisualDensity(vertical: -3),
+            visualDensity: PlatformDetector.isAutomotive()
+                ? VisualDensity.standard
+                : const VisualDensity(vertical: -3),
             child: Column(
               children: [
                 for (var i = 0; i < children.length; i++) ...[
@@ -105,7 +109,9 @@ class SettingsGroup extends StatelessWidget {
                   Material(
                     color: t.surface,
                     clipBehavior: Clip.antiAlias,
-                    shape: RoundedRectangleBorder(borderRadius: groupItemRadii(context, i, children.length)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: groupItemRadii(context, i, children.length),
+                    ),
                     child: children[i],
                   ),
                 ],
@@ -151,7 +157,11 @@ class SegmentedSetting<T> extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ExpressiveButtonGroup<T>(segments: segments, selected: selected, onChanged: onChanged),
+          ExpressiveButtonGroup<T>(
+            segments: segments,
+            selected: selected,
+            onChanged: onChanged,
+          ),
         ],
       ),
     );

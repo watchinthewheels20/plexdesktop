@@ -6,6 +6,7 @@ import 'package:plezy/utils/app_logger.dart';
 import 'package:plezy/utils/app_version.dart';
 import 'package:plezy/utils/media_server_http_client.dart';
 import 'package:plezy/utils/platform_detector.dart';
+
 import 'base_shared_preferences_service.dart';
 
 /// Service to check for new versions on GitHub
@@ -16,7 +17,8 @@ import 'base_shared_preferences_service.dart';
 /// On all other platforms: falls back to GitHub API check + browser link dialog.
 class UpdateService {
   static const String _githubRepo = 'watchinthewheels20/plexdesktop';
-  static const String _feedUrl = 'https://cdn.jsdelivr.net/gh/edde746/plezy@appcast/appcast.xml';
+  static const String _feedUrl =
+      'https://cdn.jsdelivr.net/gh/edde746/plezy@appcast/appcast.xml';
 
   static const String _keySkippedVersion = 'update_skipped_version';
   static const String _keyLastCheckTime = 'update_last_check_time';
@@ -28,7 +30,10 @@ class UpdateService {
 
   /// Check if update checking is enabled via build flag
   static bool get isUpdateCheckEnabled {
-    return const bool.fromEnvironment('ENABLE_UPDATE_CHECK', defaultValue: false);
+    return const bool.fromEnvironment(
+      'ENABLE_UPDATE_CHECK',
+      defaultValue: false,
+    );
   }
 
   /// Whether any in-app update path applies to this install.
@@ -36,14 +41,19 @@ class UpdateService {
   /// the package directory is read-only, so neither WinSparkle nor the GitHub
   /// fallback dialog has anything it can do. Gates the settings entry too, so
   /// no dead affordance ships.
-  static bool get isUpdateCheckAvailable => isUpdateCheckEnabled && !PlatformDetector.isPackagedInstall();
+  static bool get isUpdateCheckAvailable =>
+      isUpdateCheckEnabled && !PlatformDetector.isPackagedInstall();
 
   /// Whether the native auto_updater (Sparkle/WinSparkle) should be used.
   /// True on macOS (non-Homebrew) and installed Windows (has uninstaller).
   static bool get useNativeUpdater {
     // The fork has no signed Sparkle/WinSparkle appcast; use the GitHub
     // release checker instead of contacting Plezy's update service.
-    if (!const bool.fromEnvironment('ENABLE_NATIVE_UPDATE_FEED', defaultValue: false)) return false;
+    if (!const bool.fromEnvironment(
+      'ENABLE_NATIVE_UPDATE_FEED',
+      defaultValue: false,
+    ))
+      return false;
     if (!isUpdateCheckAvailable) return false;
     if (Platform.isMacOS) return !_isHomebrewInstall();
     if (Platform.isWindows) return _isInstalledApp() && !_isWingetInstall();
@@ -59,7 +69,11 @@ class UpdateService {
       await autoUpdater.setFeedURL(_feedUrl);
       _nativeUpdaterInitialized = true;
     } catch (error, stackTrace) {
-      appLogger.e('Failed to initialize native auto updater', error: error, stackTrace: stackTrace);
+      appLogger.e(
+        'Failed to initialize native auto updater',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -73,7 +87,11 @@ class UpdateService {
     try {
       await autoUpdater.checkForUpdates(inBackground: inBackground);
     } catch (error, stackTrace) {
-      appLogger.e('Native update check failed', error: error, stackTrace: stackTrace);
+      appLogger.e(
+        'Native update check failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -169,7 +187,9 @@ class UpdateService {
       final latestVersion = data['tag_name'] as String;
 
       // Remove 'v' prefix if present
-      final cleanVersion = latestVersion.startsWith('v') ? latestVersion.substring(1) : latestVersion;
+      final cleanVersion = latestVersion.startsWith('v')
+          ? latestVersion.substring(1)
+          : latestVersion;
 
       final hasUpdate = _isNewerVersion(cleanVersion, currentVersion);
 
@@ -191,7 +211,11 @@ class UpdateService {
         };
       }
     } catch (error, stackTrace) {
-      appLogger.e('Failed to check for updates', error: error, stackTrace: stackTrace);
+      appLogger.e(
+        'Failed to check for updates',
+        error: error,
+        stackTrace: stackTrace,
+      );
       if (throwOnFailure) rethrow;
     }
 
@@ -243,7 +267,9 @@ class UpdateService {
       final currentParts = _parseVersionParts(currentVersion);
 
       // Compare each part
-      final maxLength = newParts.length > currentParts.length ? newParts.length : currentParts.length;
+      final maxLength = newParts.length > currentParts.length
+          ? newParts.length
+          : currentParts.length;
 
       for (int i = 0; i < maxLength; i++) {
         final newPart = i < newParts.length ? newParts[i] : 0;
@@ -255,7 +281,11 @@ class UpdateService {
 
       return false;
     } catch (error, stackTrace) {
-      appLogger.e('Error comparing versions', error: error, stackTrace: stackTrace);
+      appLogger.e(
+        'Error comparing versions',
+        error: error,
+        stackTrace: stackTrace,
+      );
       return false;
     }
   }

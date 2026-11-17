@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:plezy/widgets/app_icon.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart';
+
 import '../../focus/focusable_action_bar.dart';
 import '../../focus/dpad_navigator.dart';
 import '../../focus/input_mode_tracker.dart';
@@ -42,10 +43,12 @@ import 'tabs/base_library_tab.dart';
 enum LibraryTabType { recommended, browse, collections, playlists, genres }
 
 List<LibraryTabType> visibleLibraryTabs(MediaLibrary library) {
-  if (library.isShared) return [LibraryTabType.browse, LibraryTabType.playlists];
+  if (library.isShared)
+    return [LibraryTabType.browse, LibraryTabType.playlists];
   // Genres filter the library's own type; only movie and show libraries
   // browse a type both backends tag with genres.
-  final hasGenres = library.kind == MediaKind.movie || library.kind == MediaKind.show;
+  final hasGenres =
+      library.kind == MediaKind.movie || library.kind == MediaKind.show;
   return [
     for (final tab in LibraryTabType.values)
       if (tab != LibraryTabType.genres || hasGenres) tab,
@@ -56,7 +59,11 @@ class LibrariesScreen extends StatefulWidget {
   final VoidCallback? onLibraryOrderChanged;
   final ValueChanged<String>? onLibrarySelected;
 
-  const LibrariesScreen({super.key, this.onLibraryOrderChanged, this.onLibrarySelected});
+  const LibrariesScreen({
+    super.key,
+    this.onLibraryOrderChanged,
+    this.onLibrarySelected,
+  });
 
   @override
   State<LibrariesScreen> createState() => _LibrariesScreenState();
@@ -185,7 +192,9 @@ class _LibrariesScreenState extends State<LibrariesScreen>
     }
 
     final hiddenKeys = hiddenLibrariesProvider.hiddenLibraryKeys;
-    final visibleLibraries = allLibraries.where((lib) => !hiddenKeys.contains(lib.globalKey)).toList();
+    final visibleLibraries = allLibraries
+        .where((lib) => !hiddenKeys.contains(lib.globalKey))
+        .toList();
 
     final storage = await StorageService.getInstance();
     if (!mounted || _selectedLibraryGlobalKey != null) return;
@@ -193,7 +202,9 @@ class _LibrariesScreenState extends State<LibrariesScreen>
 
     String? libraryGlobalKeyToLoad;
     if (savedLibraryKey != null) {
-      final libraryExists = visibleLibraries.any((lib) => lib.globalKey == savedLibraryKey);
+      final libraryExists = visibleLibraries.any(
+        (lib) => lib.globalKey == savedLibraryKey,
+      );
       if (libraryExists) {
         libraryGlobalKeyToLoad = savedLibraryKey;
       }
@@ -350,9 +361,17 @@ class _LibrariesScreenState extends State<LibrariesScreen>
   /// Show [genre] in Browse: persist it as the selection, reload a Browse
   /// page that is already built, and switch to it. A user switch like a chip
   /// tap, so the Browse tab is saved and focus follows the load.
-  Future<void> _openGenre(MediaLibrary library, LibraryGenre genre, {required bool canGroupByFolders}) async {
+  Future<void> _openGenre(
+    MediaLibrary library,
+    LibraryGenre genre, {
+    required bool canGroupByFolders,
+  }) async {
     final libraryGlobalKey = library.globalKey;
-    await saveGenreBrowseSelection(library, genre, canGroupByFolders: canGroupByFolders);
+    await saveGenreBrowseSelection(
+      library,
+      genre,
+      canGroupByFolders: canGroupByFolders,
+    );
     if (!mounted || _selectedLibraryGlobalKey != libraryGlobalKey) return;
     final browseIndex = _visibleTabs.indexOf(LibraryTabType.browse);
     if (browseIndex < 0) return;
@@ -406,7 +425,9 @@ class _LibrariesScreenState extends State<LibrariesScreen>
   void _updateVisibleTabs(List<LibraryTabType> newTabs) {
     if (listEquals(_visibleTabs, newTabs)) return;
 
-    final currentTabType = _visibleTabs.length > tabController.index ? _visibleTabs[tabController.index] : null;
+    final currentTabType = _visibleTabs.length > tabController.index
+        ? _visibleTabs[tabController.index]
+        : null;
 
     for (final node in _tabFocusNodes) {
       node.dispose();
@@ -414,10 +435,15 @@ class _LibrariesScreenState extends State<LibrariesScreen>
     disposeTabNavigation();
 
     _visibleTabs = newTabs;
-    _tabFocusNodes = List.generate(newTabs.length, (i) => FocusNode(debugLabel: 'tab_chip_${newTabs[i].name}'));
+    _tabFocusNodes = List.generate(
+      newTabs.length,
+      (i) => FocusNode(debugLabel: 'tab_chip_${newTabs[i].name}'),
+    );
     initTabNavigation();
 
-    final newIndex = currentTabType != null ? newTabs.indexOf(currentTabType) : -1;
+    final newIndex = currentTabType != null
+        ? newTabs.indexOf(currentTabType)
+        : -1;
     if (newIndex > 0) {
       // Carrying the tab type over is not a user pick: it must neither focus
       // nor save — the save would overwrite the destination library's saved
@@ -485,7 +511,9 @@ class _LibrariesScreenState extends State<LibrariesScreen>
         suppressAutoFocus: suppressAutoFocus,
         onDataLoaded: () => _handleTabDataLoaded(tabIndex),
         onBack: focusTabBar,
-        onGenreSelected: (genre) => unawaited(_openGenre(library, genre, canGroupByFolders: canGroupByFolders)),
+        onGenreSelected: (genre) => unawaited(
+          _openGenre(library, genre, canGroupByFolders: canGroupByFolders),
+        ),
       ),
       LibraryTabType.playlists => LibraryPlaylistsTab(
         key: _playlistsTabKey,
@@ -515,7 +543,9 @@ class _LibrariesScreenState extends State<LibrariesScreen>
 
     // Resolve from allLibraries — hidden libraries are still navigable from the
     // sidebar's "Hidden libraries" section.
-    final selectedLibrary = allLibraries.where((lib) => lib.globalKey == libraryGlobalKey).firstOrNull;
+    final selectedLibrary = allLibraries
+        .where((lib) => lib.globalKey == libraryGlobalKey)
+        .firstOrNull;
     if (selectedLibrary == null) return;
 
     final isLibraryChange = _selectedLibraryGlobalKey != libraryGlobalKey;
@@ -549,8 +579,12 @@ class _LibrariesScreenState extends State<LibrariesScreen>
 
     // Restore saved tab by name
     final savedTabName = storage.getLibraryTab(libraryGlobalKey);
-    final savedType = LibraryTabType.values.where((t) => t.name == savedTabName).firstOrNull;
-    final targetTabIndex = savedType != null ? _visibleTabs.indexOf(savedType) : -1;
+    final savedType = LibraryTabType.values
+        .where((t) => t.name == savedTabName)
+        .firstOrNull;
+    final targetTabIndex = savedType != null
+        ? _visibleTabs.indexOf(savedType)
+        : -1;
     if (targetTabIndex >= 0 && targetTabIndex != tabController.index) {
       // Set flag to prevent _onTabChanged from triggering focus
       _isRestoringTab = true;
@@ -564,7 +598,9 @@ class _LibrariesScreenState extends State<LibrariesScreen>
     // However, on first load the tab might finish loading before the tab index
     // is restored. Check if the current tab has already loaded and focus if so.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _selectedLibraryGlobalKey == libraryGlobalKey && _loadedTabs.contains(tabController.index)) {
+      if (mounted &&
+          _selectedLibraryGlobalKey == libraryGlobalKey &&
+          _loadedTabs.contains(tabController.index)) {
         _focusCurrentTab();
       }
     });
@@ -593,7 +629,8 @@ class _LibrariesScreenState extends State<LibrariesScreen>
   void onTabShown() {
     if (_selectedLibraryGlobalKey == null) return;
     final Object? tabState = _getTabState(tabController.index);
-    if (tabState is BaseLibraryTabState) tabState.refreshIfLibraryContentStale();
+    if (tabState is BaseLibraryTabState)
+      tabState.refreshIfLibraryContentStale();
   }
 
   @override
@@ -636,13 +673,19 @@ class _LibrariesScreenState extends State<LibrariesScreen>
   Future<void> _toggleLibraryVisibility(MediaLibrary library) async {
     if (!mounted) return;
     final librariesProvider = context.read<LibrariesProvider>();
-    final hiddenLibrariesProvider = Provider.of<HiddenLibrariesProvider>(context, listen: false);
-    final isHidden = hiddenLibrariesProvider.hiddenLibraryKeys.contains(library.globalKey);
+    final hiddenLibrariesProvider = Provider.of<HiddenLibrariesProvider>(
+      context,
+      listen: false,
+    );
+    final isHidden = hiddenLibrariesProvider.hiddenLibraryKeys.contains(
+      library.globalKey,
+    );
 
     if (isHidden) {
       await hiddenLibrariesProvider.unhideLibrary(library.globalKey);
     } else {
-      final isCurrentlySelected = _selectedLibraryGlobalKey == library.globalKey;
+      final isCurrentlySelected =
+          _selectedLibraryGlobalKey == library.globalKey;
 
       await hiddenLibrariesProvider.hideLibrary(library.globalKey);
 
@@ -651,7 +694,11 @@ class _LibrariesScreenState extends State<LibrariesScreen>
         // Compute visible libraries after hiding
         final allLibraries = librariesProvider.libraries;
         final visibleLibraries = allLibraries
-            .where((lib) => !hiddenLibrariesProvider.hiddenLibraryKeys.contains(lib.globalKey))
+            .where(
+              (lib) => !hiddenLibrariesProvider.hiddenLibraryKeys.contains(
+                lib.globalKey,
+              ),
+            )
             .toList();
 
         if (visibleLibraries.isNotEmpty) {
@@ -669,7 +716,10 @@ class _LibrariesScreenState extends State<LibrariesScreen>
     );
   }
 
-  AppMenuHeader<String> _buildLibraryServerHeaderMenuItem(MediaLibrary library, String serverKey) {
+  AppMenuHeader<String> _buildLibraryServerHeaderMenuItem(
+    MediaLibrary library,
+    String serverKey,
+  ) {
     return AppMenuHeader<String>(
       child: LibraryServerLabel(
         library: library,
@@ -681,7 +731,10 @@ class _LibrariesScreenState extends State<LibrariesScreen>
     );
   }
 
-  AppMenuItem<String> _buildLibraryMenuItem(MediaLibrary library, {required bool showServerName}) {
+  AppMenuItem<String> _buildLibraryMenuItem(
+    MediaLibrary library, {
+    required bool showServerName,
+  }) {
     final isSelected = library.globalKey == _selectedLibraryGlobalKey;
     return AppMenuItem<String>(
       value: library.globalKey,
@@ -694,7 +747,8 @@ class _LibrariesScreenState extends State<LibrariesScreen>
               badgeSize: 10,
               style: TextStyle(
                 fontSize: 11,
-                color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                color: Theme.of(context).textTheme.bodySmall?.color
+                    ?.withValues(alpha: 0.6),
               ),
               constrainText: true,
             )
@@ -723,13 +777,15 @@ class _LibrariesScreenState extends State<LibrariesScreen>
     required bool groupByServer,
   }) {
     // No selection at all, or visible list is empty AND we're not browsing a hidden library
-    if (_selectedLibraryGlobalKey == null || (visibleLibraries.isEmpty && selectedLibrary == null)) {
+    if (_selectedLibraryGlobalKey == null ||
+        (visibleLibraries.isEmpty && selectedLibrary == null)) {
       return Text(t.libraries.title);
     }
 
     // Plex Web uses the library name/server at the left of the underline
     // tabs. The existing tab controller still preserves the selected view.
-    if (Theme.of(context).platform == TargetPlatform.windows && selectedLibrary != null) {
+    if (Theme.of(context).platform == TargetPlatform.windows &&
+        selectedLibrary != null) {
       return Row(
         children: [
           SizedBox(
@@ -742,13 +798,19 @@ class _LibrariesScreenState extends State<LibrariesScreen>
                   selectedLibrary.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w400),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
                 Text(
                   selectedLibrary.serverName ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 13, color: Color(0xFF999999)),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF999999),
+                  ),
                 ),
               ],
             ),
@@ -763,7 +825,8 @@ class _LibrariesScreenState extends State<LibrariesScreen>
                     i,
                     onSelectWhenActive: _focusCurrentTab,
                     onNavigateDown: _focusCurrentTabFromTabBar,
-                    onNavigateToActions: () => _actionBarKey.currentState?.requestFocusOnFirst(),
+                    onNavigateToActions: () =>
+                        _actionBarKey.currentState?.requestFocusOnFirst(),
                   ),
                 ],
               ],
@@ -784,7 +847,8 @@ class _LibrariesScreenState extends State<LibrariesScreen>
               i,
               onSelectWhenActive: _focusCurrentTab,
               onNavigateDown: _focusCurrentTabFromTabBar,
-              onNavigateToActions: () => _actionBarKey.currentState?.requestFocusOnFirst(),
+              onNavigateToActions: () =>
+                  _actionBarKey.currentState?.requestFocusOnFirst(),
             ),
           ],
         ],
@@ -792,12 +856,20 @@ class _LibrariesScreenState extends State<LibrariesScreen>
     }
 
     // On mobile, show the dropdown
-    return _buildLibraryDropdownTitle(visibleLibraries, groupByServer: groupByServer);
+    return _buildLibraryDropdownTitle(
+      visibleLibraries,
+      groupByServer: groupByServer,
+    );
   }
 
-  Widget _buildLibraryDropdownTitle(List<MediaLibrary> visibleLibraries, {required bool groupByServer}) {
+  Widget _buildLibraryDropdownTitle(
+    List<MediaLibrary> visibleLibraries, {
+    required bool groupByServer,
+  }) {
     final selectedLibrary =
-        visibleLibraries.where((lib) => lib.globalKey == _selectedLibraryGlobalKey).firstOrNull ??
+        visibleLibraries
+            .where((lib) => lib.globalKey == _selectedLibraryGlobalKey)
+            .firstOrNull ??
         visibleLibraries.firstOrNull;
     if (selectedLibrary == null) return Text(t.libraries.title);
 
@@ -808,31 +880,46 @@ class _LibrariesScreenState extends State<LibrariesScreen>
       onSelected: (libraryGlobalKey) {
         _loadLibraryContent(libraryGlobalKey);
       },
-      entriesBuilder: (context) => _buildGroupedLibraryMenuItems(visibleLibraries, groupByServer: groupByServer),
+      entriesBuilder: (context) => _buildGroupedLibraryMenuItems(
+        visibleLibraries,
+        groupByServer: groupByServer,
+      ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Row(
           mainAxisSize: .min,
           children: [
-            AppIcon(ContentTypeHelper.getLibraryIcon(selectedLibrary.kind.id), fill: 1, size: 20),
+            AppIcon(
+              ContentTypeHelper.getLibraryIcon(selectedLibrary.kind.id),
+              fill: 1,
+              size: 20,
+            ),
             const SizedBox(width: 8),
-            if (librariesSpanMultipleServers(visibleLibraries) && selectedLibrary.serverName != null)
+            if (librariesSpanMultipleServers(visibleLibraries) &&
+                selectedLibrary.serverName != null)
               Column(
                 crossAxisAlignment: .start,
                 mainAxisSize: .min,
                 children: [
-                  Text(selectedLibrary.title, style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    selectedLibrary.title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   LibraryServerLabel(
                     library: selectedLibrary,
                     badgeSize: 10,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                      color: Theme.of(context).textTheme.bodySmall?.color
+                          ?.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
               )
             else
-              Text(selectedLibrary.title, style: Theme.of(context).textTheme.titleLarge),
+              Text(
+                selectedLibrary.title,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
             const SizedBox(width: 4),
             const AppIcon(Symbols.arrow_drop_down_rounded, fill: 1, size: 24),
           ],
@@ -845,7 +932,8 @@ class _LibrariesScreenState extends State<LibrariesScreen>
   Widget build(BuildContext context) {
     return SettingValueBuilder<bool>(
       pref: SettingsService.groupLibrariesByServer,
-      builder: (context, groupByServerSetting, _) => _buildContent(context, groupByServerSetting),
+      builder: (context, groupByServerSetting, _) =>
+          _buildContent(context, groupByServerSetting),
     );
   }
 
@@ -860,26 +948,42 @@ class _LibrariesScreenState extends State<LibrariesScreen>
     final hiddenKeys = hiddenLibrariesProvider.hiddenLibraryKeys;
 
     // Compute visible libraries (filtered from all libraries)
-    final visibleLibraries = allLibraries.where((lib) => !hiddenKeys.contains(lib.globalKey)).toList();
+    final visibleLibraries = allLibraries
+        .where((lib) => !hiddenKeys.contains(lib.globalKey))
+        .toList();
 
     // Resolve selected library defensively — may be null if server temporarily dropped during refresh
     final selectedLibrary = _selectedLibraryGlobalKey != null
-        ? allLibraries.where((lib) => lib.globalKey == _selectedLibraryGlobalKey).firstOrNull
+        ? allLibraries
+              .where((lib) => lib.globalKey == _selectedLibraryGlobalKey)
+              .firstOrNull
         : null;
 
     final useSideNavigation = PlatformDetector.shouldUseSideNavigation(context);
     final showMobileTabsRow = selectedLibrary != null && !useSideNavigation;
-    final currentTabIndex = _visibleTabs.isEmpty ? 0 : tabController.index.clamp(0, _visibleTabs.length - 1).toInt();
-    final currentTabType = _visibleTabs.isEmpty ? null : _visibleTabs[currentTabIndex];
-    final useTvRecommendedBackdrop = PlatformDetector.isTV() && currentTabType == LibraryTabType.recommended;
+    final currentTabIndex = _visibleTabs.isEmpty
+        ? 0
+        : tabController.index.clamp(0, _visibleTabs.length - 1).toInt();
+    final currentTabType = _visibleTabs.isEmpty
+        ? null
+        : _visibleTabs[currentTabIndex];
+    final useTvRecommendedBackdrop =
+        PlatformDetector.isTV() && currentTabType == LibraryTabType.recommended;
     final showBrowseOptionsAction =
-        selectedLibrary != null && PlatformDetector.isMobile(context) && currentTabType == LibraryTabType.browse;
-    final canSelectedLibraryGroupByFolders = context.select<MultiServerProvider, bool>((provider) {
-      if (selectedLibrary == null || selectedLibrary.isShared) return false;
-      final serverId = serverIdOrNull(selectedLibrary.serverId);
-      if (serverId == null) return false;
-      return provider.getClientForServer(serverId)?.capabilities.folderGrouping ?? false;
-    });
+        selectedLibrary != null &&
+        PlatformDetector.isMobile(context) &&
+        currentTabType == LibraryTabType.browse;
+    final canSelectedLibraryGroupByFolders = context
+        .select<MultiServerProvider, bool>((provider) {
+          if (selectedLibrary == null || selectedLibrary.isShared) return false;
+          final serverId = serverIdOrNull(selectedLibrary.serverId);
+          if (serverId == null) return false;
+          return provider
+                  .getClientForServer(serverId)
+                  ?.capabilities
+                  .folderGrouping ??
+              false;
+        });
 
     List<FocusableAction> appBarActions() => [
       if (allLibraries.isNotEmpty)
@@ -920,24 +1024,37 @@ class _LibrariesScreenState extends State<LibrariesScreen>
                 )
               : null,
         ),
-      if (selectedLibrary != null && MediaListPlaybackLauncher.canShuffleLibrary(selectedLibrary))
+      if (selectedLibrary != null &&
+          MediaListPlaybackLauncher.canShuffleLibrary(selectedLibrary))
         FocusableAction(
           icon: Symbols.shuffle_rounded,
           tooltip: t.libraries.shuffleLibrary,
-          onPressed: () => unawaited(MediaListPlaybackLauncher.shuffleLibrary(context, selectedLibrary)),
+          onPressed: () => unawaited(
+            MediaListPlaybackLauncher.shuffleLibrary(context, selectedLibrary),
+          ),
         ),
-      FocusableAction(icon: Symbols.refresh_rounded, tooltip: t.common.refresh, onPressed: manualRefresh),
+      FocusableAction(
+        icon: Symbols.refresh_rounded,
+        tooltip: t.common.refresh,
+        onPressed: manualRefresh,
+      ),
     ];
 
     Widget appBar({required bool floating}) => DesktopSliverAppBar(
-      title: _buildAppBarTitle(visibleLibraries, selectedLibrary, groupByServer: groupByServerSetting),
+      title: _buildAppBarTitle(
+        visibleLibraries,
+        selectedLibrary,
+        groupByServer: groupByServerSetting,
+      ),
       // When showing the tab content, let the app bar float away with the
       // content. Otherwise (loading / empty / error states) keep it pinned so
       // it stays visible over the centered state widget.
       pinned: !floating,
       floating: floating,
       snap: floating,
-      backgroundColor: useTvRecommendedBackdrop ? Colors.transparent : Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: useTvRecommendedBackdrop
+          ? Colors.transparent
+          : Theme.of(context).scaffoldBackgroundColor,
       surfaceTintColor: Colors.transparent,
       shadowColor: Colors.transparent,
       scrolledUnderElevation: 0,
@@ -952,8 +1069,12 @@ class _LibrariesScreenState extends State<LibrariesScreen>
                 min: 1,
                 max: 5,
                 divisions: 4,
-                onChanged: (value) =>
-                    unawaited(SettingsService.instance.write(SettingsService.libraryDensity, value.round())),
+                onChanged: (value) => unawaited(
+                  SettingsService.instance.write(
+                    SettingsService.libraryDensity,
+                    value.round(),
+                  ),
+                ),
               ),
             ),
           ),
@@ -964,7 +1085,8 @@ class _LibrariesScreenState extends State<LibrariesScreen>
           ),
         FocusableActionBar(
           key: _actionBarKey,
-          onNavigateLeft: () => getTabChipFocusNode(_visibleTabs.length - 1).requestFocus(),
+          onNavigateLeft: () =>
+              getTabChipFocusNode(_visibleTabs.length - 1).requestFocus(),
           onNavigateDown: _focusCurrentTab,
           actions: appBarActions(),
         ),
@@ -991,11 +1113,16 @@ class _LibrariesScreenState extends State<LibrariesScreen>
           shadowColor: Colors.transparent,
           elevation: 0,
           scrolledUnderElevation: 0,
-          title: _buildAppBarTitle(visibleLibraries, selectedLibrary, groupByServer: groupByServerSetting),
+          title: _buildAppBarTitle(
+            visibleLibraries,
+            selectedLibrary,
+            groupByServer: groupByServerSetting,
+          ),
           actions: [
             FocusableActionBar(
               key: _actionBarKey,
-              onNavigateLeft: () => getTabChipFocusNode(_visibleTabs.length - 1).requestFocus(),
+              onNavigateLeft: () =>
+                  getTabChipFocusNode(_visibleTabs.length - 1).requestFocus(),
               onNavigateDown: _focusCurrentTab,
               actions: appBarActions(),
             ),
@@ -1006,8 +1133,12 @@ class _LibrariesScreenState extends State<LibrariesScreen>
 
     Widget body;
     if (isLoadingLibraries) {
-      body = buildSimpleScroll(body: const Center(child: CircularProgressIndicator()));
-    } else if (librariesErrorMessage != null && visibleLibraries.isEmpty && selectedLibrary == null) {
+      body = buildSimpleScroll(
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    } else if (librariesErrorMessage != null &&
+        visibleLibraries.isEmpty &&
+        selectedLibrary == null) {
       body = buildSimpleScroll(
         body: ErrorStateWidget(
           message: librariesErrorMessage,
@@ -1018,7 +1149,10 @@ class _LibrariesScreenState extends State<LibrariesScreen>
     } else if (visibleLibraries.isEmpty && selectedLibrary == null) {
       body = buildSimpleScroll(
         body: allLibraries.isEmpty
-            ? EmptyStateWidget(message: t.libraries.noLibrariesFound, icon: Symbols.video_library_rounded)
+            ? EmptyStateWidget(
+                message: t.libraries.noLibrariesFound,
+                icon: Symbols.video_library_rounded,
+              )
             : EmptyStateWidget(
                 message: t.libraries.allLibrariesHidden,
                 icon: Symbols.visibility_off_rounded,
@@ -1040,7 +1174,10 @@ class _LibrariesScreenState extends State<LibrariesScreen>
         // doesn't bleed into adjacent tabs during swipe transitions — except
         // the TV Recommended backdrop, which draws full-bleed. Toggling the
         // clip rather than the wrapper keeps the page's widget type stable.
-        return ClipRect(clipBehavior: useTvRecommendedBackdrop ? Clip.none : Clip.hardEdge, child: tabContent);
+        return ClipRect(
+          clipBehavior: useTvRecommendedBackdrop ? Clip.none : Clip.hardEdge,
+          child: tabContent,
+        );
       }
 
       final tabs = TabBarView(
@@ -1048,7 +1185,9 @@ class _LibrariesScreenState extends State<LibrariesScreen>
         controller: tabController,
         // Disable swipe on desktop/TV - trackpad and d-pad scroll actions can trigger accidental tab switches.
         // See: https://github.com/flutter/flutter/issues/11132
-        physics: useSideNavigation ? const NeverScrollableScrollPhysics() : null,
+        physics: useSideNavigation
+            ? const NeverScrollableScrollPhysics()
+            : null,
         children: [for (int i = 0; i < _visibleTabs.length; i++) buildTab(i)],
       );
 
@@ -1061,7 +1200,9 @@ class _LibrariesScreenState extends State<LibrariesScreen>
         canRequestFocus: false,
         skipTraversal: true,
         onKeyEvent: useTvRecommendedBackdrop
-            ? (_, event) => event.logicalKey.isDpadDirection ? KeyEventResult.handled : KeyEventResult.ignored
+            ? (_, event) => event.logicalKey.isDpadDirection
+                  ? KeyEventResult.handled
+                  : KeyEventResult.ignored
             : null,
         child: Stack(
           fit: StackFit.expand,
@@ -1073,14 +1214,19 @@ class _LibrariesScreenState extends State<LibrariesScreen>
               headerSliverBuilder: (context, innerBoxIsScrolled) => [
                 if (!useTvRecommendedBackdrop)
                   SliverOverlapAbsorber(
-                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                      context,
+                    ),
                     sliver: appBar(floating: true),
                   ),
                 if (showMobileTabsRow && !useTvRecommendedBackdrop)
                   SliverToBoxAdapter(
                     child: Container(
                       color: Theme.of(context).scaffoldBackgroundColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
                       // Horizontal-only SafeArea: the strip's background
                       // stays full-bleed; its chips clear a landscape notch
                       // or iPhone Duo's portrait sensor column.
@@ -1098,7 +1244,9 @@ class _LibrariesScreenState extends State<LibrariesScreen>
                                   i,
                                   onSelectWhenActive: _focusCurrentTab,
                                   onNavigateDown: _focusCurrentTabFromTabBar,
-                                  onNavigateToActions: () => _actionBarKey.currentState?.requestFocusOnFirst(),
+                                  onNavigateToActions: () => _actionBarKey
+                                      .currentState
+                                      ?.requestFocusOnFirst(),
                                 ),
                               ],
                             ],
@@ -1111,7 +1259,12 @@ class _LibrariesScreenState extends State<LibrariesScreen>
               body: tabs,
             ),
             if (useTvRecommendedBackdrop)
-              Positioned(top: 0, left: 0, right: 0, child: ExcludeFocusTraversal(child: buildTransparentTvTopBar())),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: ExcludeFocusTraversal(child: buildTransparentTvTopBar()),
+              ),
           ],
         ),
       );
