@@ -18,8 +18,24 @@ jobs:
           channel: stable
           flutter-version: '3.47.1'
           cache: true
-      - name: Format Dart sources
-        run: dart format lib test
+      - name: Format only review-changed Dart files
+        shell: bash
+        run: |
+          dart format \
+            lib/screens/discover_screen.dart \\
+            lib/screens/libraries/libraries_screen.dart \\
+            lib/screens/main_screen.dart \\
+            lib/screens/media_detail_screen.dart \\
+            lib/screens/metadata_edit_screen.dart \\
+            lib/screens/profile/profile_switch_screen.dart \\
+            lib/services/settings_service.dart \\
+            lib/services/update_service.dart \\
+            lib/theme/mono_theme.dart \\
+            lib/widgets/focusable_tab_chip.dart \\
+            lib/widgets/hub_section.dart \\
+            lib/widgets/settings_section.dart \\
+            lib/widgets/side_navigation_rail.dart \\
+            test/plex_web_theme_test.dart
       - name: Commit formatted Dart changes (only if required)
         shell: bash
         run: |
