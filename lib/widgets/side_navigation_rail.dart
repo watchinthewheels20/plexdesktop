@@ -1087,7 +1087,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
                                         _buildNavItem(
                                           icon: Symbols.explore_rounded,
                                           selectedIcon: Symbols.explore_rounded,
-                                          label: Platform.isWindows ? 'Watchlist' : Translations.of(context).navigation.explore,
+                                          label: Translations.of(context).navigation.explore,
                                           isSelected: widget.selectedTab == NavigationTabId.explore,
                                           onTap: () => widget.onDestinationSelected(NavigationTabId.explore),
                                           focusNode: _focusTracker.get(_kExplore),
