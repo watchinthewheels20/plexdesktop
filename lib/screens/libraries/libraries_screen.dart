@@ -428,13 +428,19 @@ class _LibrariesScreenState extends State<LibrariesScreen>
     }
   }
 
-  String _getTabLabel(LibraryTabType type) => switch (type) {
-    LibraryTabType.recommended => t.libraries.tabs.recommended,
-    LibraryTabType.browse => t.libraries.tabs.browse,
-    LibraryTabType.collections => t.libraries.tabs.collections,
-    LibraryTabType.genres => t.libraries.tabs.genres,
-    LibraryTabType.playlists => t.libraries.tabs.playlists,
-  };
+  String _getTabLabel(LibraryTabType type) {
+    if (Theme.of(context).platform == TargetPlatform.windows) {
+      if (type == LibraryTabType.browse) return 'Library';
+      if (type == LibraryTabType.genres) return 'Categories';
+    }
+    return switch (type) {
+      LibraryTabType.recommended => t.libraries.tabs.recommended,
+      LibraryTabType.browse => t.libraries.tabs.browse,
+      LibraryTabType.collections => t.libraries.tabs.collections,
+      LibraryTabType.genres => t.libraries.tabs.genres,
+      LibraryTabType.playlists => t.libraries.tabs.playlists,
+    };
+  }
 
   Widget _buildTabContent(
     LibraryTabType type, {
@@ -721,6 +727,52 @@ class _LibrariesScreenState extends State<LibrariesScreen>
       return Text(t.libraries.title);
     }
 
+    // Plex Web uses the library name/server at the left of the underline
+    // tabs. The existing tab controller still preserves the selected view.
+    if (Theme.of(context).platform == TargetPlatform.windows && selectedLibrary != null) {
+      return Row(
+        children: [
+          SizedBox(
+            width: 235,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  selectedLibrary.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w400),
+                ),
+                Text(
+                  selectedLibrary.serverName ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF999999)),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabChipStrip(
+              children: [
+                for (int i = 0; i < _visibleTabs.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 8),
+                  buildTabChip(
+                    _getTabLabel(_visibleTabs[i]),
+                    i,
+                    onSelectWhenActive: _focusCurrentTab,
+                    onNavigateDown: _focusCurrentTabFromTabBar,
+                    onNavigateToActions: () => _actionBarKey.currentState?.requestFocusOnFirst(),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     // On desktop/TV with side nav, show tabs in app bar (library name is in side nav)
     if (PlatformDetector.shouldUseSideNavigation(context)) {
       return TabChipStrip(
@@ -890,6 +942,26 @@ class _LibrariesScreenState extends State<LibrariesScreen>
       shadowColor: Colors.transparent,
       scrolledUnderElevation: 0,
       actions: [
+        if (Theme.of(context).platform == TargetPlatform.windows)
+          SettingValueBuilder<int>(
+            pref: SettingsService.libraryDensity,
+            builder: (context, density, _) => SizedBox(
+              width: 118,
+              child: Slider(
+                value: density.toDouble(),
+                min: 1,
+                max: 5,
+                divisions: 4,
+                onChanged: (value) =>
+                    unawaited(SettingsService.instance.write(SettingsService.libraryDensity, value.round())),
+              ),
+            ),
+          ),
+        if (Theme.of(context).platform == TargetPlatform.windows)
+          const Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: Icon(Icons.grid_view, color: Colors.white70, size: 25),
+          ),
         FocusableActionBar(
           key: _actionBarKey,
           onNavigateLeft: () => getTabChipFocusNode(_visibleTabs.length - 1).requestFocus(),
