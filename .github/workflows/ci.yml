@@ -18,6 +18,10 @@ on:
         default: false
         type: boolean
 
+concurrency:
+  group: sanity-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   # Only place this workflow names the SDK; .github/actions/setup-flutter-git pins the same release.
   FLUTTER_VERSION: "3.47.1"
@@ -165,6 +169,7 @@ jobs:
 
   android-test:
     name: Android JVM and Native Tests
+    if: ${{ github.repository == 'edde746/plezy' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -254,6 +259,7 @@ jobs:
 
   linux-native-test:
     name: Linux native reliability (${{ matrix.sanitizer }})
+    if: ${{ github.repository == 'edde746/plezy' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -324,6 +330,7 @@ jobs:
 
   apple-native-test:
     name: Apple native reliability (${{ matrix.platform }})
+    if: ${{ github.repository == 'edde746/plezy' }}
     runs-on: macos-26
     permissions:
       contents: read
@@ -629,7 +636,7 @@ jobs:
   # way to exercise it before merging.
   linux-packages:
     name: Linux package smoke build
-    if: ${{ inputs.build_linux_packages || github.event_name == 'push' }}
+    if: ${{ github.repository == 'edde746/plezy' && (inputs.build_linux_packages || github.event_name == 'push') }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read

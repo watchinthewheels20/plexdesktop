@@ -42,5 +42,14 @@ else
 fi
 
 for guard_test in scripts/test_*.py scripts/*/test_*.py; do
+  if "$is_loungemedia"; then
+    case "$guard_test" in
+      scripts/checks/test_check_build_workflow.py|scripts/checks/test_check_windows_installer.py|scripts/checks/test_check_windows_msix.py)
+        # These fixture tests enforce Plezy's unshipped ARM64/MSIX contract.
+        # The fork's x64 release guard runs above instead.
+        continue
+        ;;
+    esac
+  fi
   python3 "$guard_test"
 done
