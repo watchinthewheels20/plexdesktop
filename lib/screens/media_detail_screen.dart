@@ -3508,7 +3508,10 @@ class _MediaDetailScreenState extends State<MediaDetailScreen>
               _HeroChips.actionGap +
               _heroActionHeight +
               _heroBottomInset;
-    final headerHeight = isTv ? size.height : math.max(size.height * 0.6, heroFloor);
+    final windowsWebDetail = theme.platform == TargetPlatform.windows && size.width >= 770;
+    final headerHeight = isTv
+        ? size.height
+        : math.max(size.height * (windowsWebDetail ? 0.58 : 0.6), windowsWebDetail ? math.max(heroFloor, 414) : heroFloor);
 
     if (isTv) {
       return _buildTvDetailScreen(context, metadata, _handleMediaDetailBackKey);
@@ -4779,6 +4782,37 @@ class _MediaDetailScreenState extends State<MediaDetailScreen>
   }
 
   Widget _buildHeroHeader(BuildContext context, MediaItem metadata) {
+    // Plex Web keeps a full poster beside the item title and actions instead
+    // of floating the title over a full-screen mobile hero. The metadata,
+    // playback controls, and editing actions still come from Plezy.
+    if (Theme.of(context).platform == TargetPlatform.windows &&
+        MediaQuery.sizeOf(context).width >= 770) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(28, 66, 28, 20),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            SizedBox(
+              width: 215,
+              height: 322,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: OptimizedMediaImage(
+                  client: _getArtworkMediaClient(context),
+                  imagePath: metadata.thumbPath,
+                  fit: BoxFit.cover,
+                  imageType: ImageType.poster,
+                  width: 215,
+                  height: 322,
+                ),
+              ),
+            ),
+            const SizedBox(width: 36),
+            Expanded(child: _buildHeroHeaderContent(context, metadata)),
+          ],
+        ),
+      );
+    }
     // bottom: false — the hero is the top sliver, so the bottom safe-area
     // inset would otherwise push the action row far up off the hero edge.
     // Left/right stay enabled for the landscape notch. The top inset covers
