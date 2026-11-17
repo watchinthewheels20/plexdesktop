@@ -641,7 +641,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
             if (_mountedFocusNodeFor(hiddenKey) != null) return hiddenKey;
           }
         }
-        return _kLibraries;
+        return Platform.isWindows ? _kHome : _kLibraries;
       case NavigationTabId.search:
         return _kSearch;
       case NavigationTabId.downloads:
@@ -770,11 +770,11 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
       if (!widget.isOfflineMode) ...[
         _kHome,
         if (hasNowPlaying) _kNowPlaying,
-        _kLibraries,
+        if (!Platform.isWindows) _kLibraries,
         // Library rows render inside ExcludeFocus(excluding: !_librariesExpanded
         // || isCollapsed); keep the D-pad order in lockstep with that render
         // condition so a collapsed rail never targets a focus-excluded row.
-        if (_librariesExpanded && !isCollapsed) ...[
+        if ((Platform.isWindows || _librariesExpanded) && !isCollapsed) ...[
           ..._focusKeysForLibraryRows(visibleRows),
           if (hasHiddenLibraries) ...[
             _kHiddenLibraries,
@@ -1038,13 +1038,30 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
                                         _buildNowPlayingItem(nowPlayingTrack, musicService, isCollapsed: isCollapsed),
                                         const SizedBox(height: _itemGap),
                                       ],
-                                      _buildLibrariesSection(
-                                        visibleRows,
-                                        hiddenRows,
-                                        hiddenLibraries.length,
-                                        t,
-                                        isCollapsed: isCollapsed,
-                                      ),
+                                      if (Platform.isWindows) ...[
+                                        const SizedBox(height: 42),
+                                        if (librariesProvider.isLoading)
+                                          const Center(
+                                            child: Padding(
+                                              padding: EdgeInsets.all(16),
+                                              child: CircularProgressIndicator(),
+                                            ),
+                                          )
+                                        else ...[
+                                          if (visibleRows.isNotEmpty) _buildLibraryGroupedColumn(visibleRows, t),
+                                          if (hiddenLibraries.isNotEmpty) ...[
+                                            _buildHiddenLibrariesHeader(hiddenLibraries.length, t),
+                                            if (_hiddenLibrariesExpanded) _buildLibraryGroupedColumn(hiddenRows, t),
+                                          ],
+                                        ],
+                                      ] else
+                                        _buildLibrariesSection(
+                                          visibleRows,
+                                          hiddenRows,
+                                          hiddenLibraries.length,
+                                          t,
+                                          isCollapsed: isCollapsed,
+                                        ),
                                       const SizedBox(height: _itemGap),
                                       if (Platform.isWindows)
                                         const Padding(
@@ -1415,12 +1432,17 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
     final backend = context.read<MultiServerProvider>().serverManager.getClient(serverId)?.backend;
     return _buildCollapsibleHeader(
       focusKey: _serverHeaderFocusKey(section, serverId),
-      icon: Symbols.dns_rounded,
-      iconSize: 14,
+      icon: Platform.isWindows ? Symbols.account_circle_rounded : Symbols.dns_rounded,
+      iconSize: Platform.isWindows ? 22 : 14,
       leading: backend == null ? null : BackendBadge(backend: backend, size: 14, color: t.textMuted),
       label: serverName,
-      labelStyle: TextStyle(fontSize: 11, fontWeight: .w600, letterSpacing: 0.4, color: t.textMuted),
-      verticalPadding: 6,
+      labelStyle: TextStyle(
+        fontSize: Platform.isWindows ? 18 : 11,
+        fontWeight: Platform.isWindows ? FontWeight.w400 : FontWeight.w600,
+        letterSpacing: 0.4,
+        color: Platform.isWindows ? t.accent : t.textMuted,
+      ),
+      verticalPadding: Platform.isWindows ? 15 : 6,
       isExpanded: !_collapsedServerGroupKeys.contains(_serverGroupStateKey(section, serverId)),
       onToggle: () => _toggleServerCollapse(section, serverId),
       t: t,
@@ -1441,7 +1463,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
       focusKey: _kHiddenLibraries,
       icon: Symbols.visibility_off_rounded,
       iconSize: 16,
-      label: Translations.of(context).libraries.hiddenLibrariesCount(count: count),
+      label: Platform.isWindows ? 'More' : Translations.of(context).libraries.hiddenLibrariesCount(count: count),
       labelStyle: TextStyle(fontSize: 12, fontWeight: .w500, color: t.textMuted),
       verticalPadding: 8,
       isExpanded: _hiddenLibrariesExpanded,
