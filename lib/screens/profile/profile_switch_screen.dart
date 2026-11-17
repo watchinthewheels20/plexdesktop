@@ -84,8 +84,9 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen> with MountedS
       },
       child: Stack(
         children: [
-          FocusedScrollScaffold(
-            title: Text(t.screens.switchProfile),
+          if (Theme.of(context).platform != TargetPlatform.windows)
+            FocusedScrollScaffold(
+              title: Text(t.screens.switchProfile),
             automaticallyImplyLeading: !widget.requireSelection,
             onBackPressed: widget.requireSelection ? () => unawaited(AppExitService.requestExit()) : null,
             slivers: [
@@ -120,8 +121,183 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen> with MountedS
               ),
             ],
           ),
+          if (Theme.of(context).platform == TargetPlatform.windows)
+            _buildPlexWebProfilePicker(activeProvider, profiles, loading),
           if (_switching) const ProfileSwitchingOverlay(),
         ],
+      ),
+    );
+  }
+
+  /// Desktop profile chooser: a black canvas and horizontal cards matching
+  /// Plex Web's Select User screen. Selection still goes through Plezy's
+  /// existing PIN validation and profile-binding flow.
+  Widget _buildPlexWebProfilePicker(
+    ActiveProfileProvider activeProvider,
+    List<Profile> profiles,
+    bool loading,
+  ) {
+    if (loading) {
+      return const ColoredBox(
+        color: Colors.black,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return ColoredBox(
+      color: Colors.black,
+      child: LayoutBuilder(
+        builder: (context, viewport) => SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 72),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: (viewport.maxHeight - 144).clamp(0.0, double.infinity)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Select User',
+                    style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w400),
+                  ),
+                  const SizedBox(height: 54),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (final profile in profiles) ...[
+                          _buildPlexWebProfileCard(activeProvider, profile),
+                          const SizedBox(width: 28),
+                        ],
+                        _buildPlexWebAddProfileCard(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlexWebProfileCard(ActiveProfileProvider activeProvider, Profile profile) {
+    final isActive = profile.id == activeProvider.activeId;
+    final focusNode = _profileFocusNode(profile);
+    final onSelect = _switching ? null : () => _switchTo(profile);
+    return SizedBox(
+      width: 180,
+      height: 255,
+      child: FocusableWrapper(
+        focusNode: focusNode,
+        autofocus: activeProvider.profiles.firstOrNull?.id == profile.id,
+        disableScale: true,
+        useBackgroundFocus: true,
+        borderRadius: 4,
+        onSelect: onSelect,
+        onLongPress: widget.requireSelection ? null : () => _openProfileMenu(profile),
+        child: Material(
+          color: const Color(0xFF242424),
+          borderRadius: BorderRadius.circular(4),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onSelect,
+            onLongPress: widget.requireSelection ? null : () => _openProfileMenu(profile),
+            child: Column(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFF555555), width: 5),
+                          ),
+                          child: ProfileAvatar(
+                            profile: profile,
+                            avatarUrl: activeProvider.avatarUrlFor(profile.id),
+                            size: 112,
+                          ),
+                        ),
+                        if (profile.plexAdmin)
+                          const Positioned(
+                            right: -3,
+                            bottom: -3,
+                            child: Icon(Icons.workspace_premium, color: Color(0xFFE5A00D), size: 24),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  width: double.infinity,
+                  height: 75,
+                  color: const Color(0xFF171717),
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 8),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        profile.displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: isActive ? const Color(0xFFE5A00D) : Colors.white70,
+                          fontSize: 19,
+                        ),
+                      ),
+                      if (profile.isPlexHome) ...[
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Managed Account',
+                          style: TextStyle(color: Colors.white54, fontSize: 14),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlexWebAddProfileCard() {
+    return SizedBox(
+      width: 180,
+      height: 255,
+      child: Material(
+        color: const Color(0xFF262626),
+        borderRadius: BorderRadius.circular(4),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: _switching ? null : _addLocalProfile,
+          child: Column(
+            children: [
+              const Expanded(
+                child: Center(
+                  child: CircleAvatar(
+                    radius: 62,
+                    backgroundColor: Color(0xFF424242),
+                    child: Icon(Icons.add, size: 78, color: Color(0xFFE5A00D)),
+                  ),
+                ),
+              ),
+              Container(
+                color: const Color(0xFF171717),
+                height: 75,
+                alignment: Alignment.center,
+                child: const Text('Add User...', style: TextStyle(color: Colors.white70, fontSize: 19)),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
