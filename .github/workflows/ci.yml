@@ -593,6 +593,9 @@ jobs:
 
   website:
     name: Website checks
+    # The Windows-only fork does not distribute the upstream Plezy website.
+    # It retains the original website sources for attribution/history.
+    if: ${{ github.repository == 'edde746/plezy' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
