@@ -653,7 +653,8 @@ class SettingsService extends BaseSharedPreferencesService {
   static const seekTimeSmall = IntPref('seek_time_small', defaultValue: 10);
   static const seekTimeLarge = IntPref('seek_time_large', defaultValue: 30);
   static const rewindOnResume = IntPref('rewind_on_resume');
-  static const showHeroSection = BoolPref('show_hero_section', defaultValue: true);
+  static bool _defaultShowHero() => !Platform.isWindows;
+  static const showHeroSection = BoolPref('show_hero_section', defaultValueProvider: _defaultShowHero);
   static const tvFullCardLayout = BoolPref('tv_full_card_layout', defaultValue: false);
   static const focusGlow = BoolPref('focus_glow', defaultValue: true);
   static const useGlobalHubs = BoolPref('use_global_hubs', defaultValue: true);
@@ -1017,7 +1018,8 @@ class SettingsService extends BaseSharedPreferencesService {
     defaultValue: PlaybackBufferTier.auto,
   );
   static const libraryDensity = _LibraryDensityPref();
-  static GridSpacing _tvAwareGridSpacingDefault() => PlatformDetector.isTV() ? GridSpacing.normal : GridSpacing.tight;
+  static GridSpacing _tvAwareGridSpacingDefault() =>
+      Platform.isWindows || PlatformDetector.isTV() ? GridSpacing.normal : GridSpacing.tight;
   static const gridSpacing = EnumPref<GridSpacing>(
     'grid_spacing',
     values: GridSpacing.values,
