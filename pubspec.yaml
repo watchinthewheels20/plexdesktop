@@ -1,7 +1,7 @@
 name: plezy
-description: "A beautiful Plex and Jellyfin client for Flutter"
+description: "LoungeMedia - independent Windows desktop Plex client based on Plezy"
 publish_to: "none"
-version: 2.26.0+160
+version: 2.26.1+161
 
 environment:
   # Dart floor stays 3.12: freezed 3.x emits `final` constructor parameters,
