@@ -409,7 +409,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
               else
                 TextButton.icon(
                   onPressed: _hasChanges ? _save : null,
-                  icon: const Icon(Icons.check),
+                  icon: const AppIcon(Symbols.check_rounded),
                   label: Text(t.common.save),
                 ),
               const SizedBox(width: 16),

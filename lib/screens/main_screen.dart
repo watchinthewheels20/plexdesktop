@@ -2273,7 +2273,7 @@ class _MainScreenState extends State<MainScreen>
             IconButton(
               tooltip: 'Focus navigation',
               onPressed: _focusSidebar,
-              icon: const Icon(Icons.menu, size: 28),
+              icon: const AppIcon(Symbols.menu_rounded, size: 28),
             ),
             const SizedBox(width: 20),
             const Text(
@@ -2305,7 +2305,7 @@ class _MainScreenState extends State<MainScreen>
                         child: Row(
                           children: [
                             SizedBox(width: 14),
-                            Icon(Icons.search, size: 25, color: Colors.white70),
+                            AppIcon(Symbols.search_rounded, size: 25, color: Colors.white70),
                             SizedBox(width: 12),
                             Text(
                               'Search',
@@ -2325,8 +2325,8 @@ class _MainScreenState extends State<MainScreen>
             IconButton(
               tooltip: 'Settings',
               onPressed: _openSettings,
-              icon: Icon(
-                Icons.build_outlined,
+              icon: AppIcon(
+                Symbols.build_rounded,
                 color: scheme.onSurfaceVariant,
                 size: 27,
               ),
@@ -2335,8 +2335,8 @@ class _MainScreenState extends State<MainScreen>
               tooltip: 'Fullscreen',
               onPressed: () =>
                   unawaited(FullscreenStateManager().toggleFullscreen()),
-              icon: Icon(
-                Icons.fullscreen,
+              icon: AppIcon(
+                Symbols.fullscreen_rounded,
                 color: scheme.onSurfaceVariant,
                 size: 27,
               ),
@@ -2347,7 +2347,7 @@ class _MainScreenState extends State<MainScreen>
               child: InkWell(
                 onTap: () => unawaited(_pushProfileSelection()),
                 child: profile == null
-                    ? const CircleAvatar(radius: 19, child: Icon(Icons.person))
+                    ? const CircleAvatar(radius: 19, child: AppIcon(Symbols.person_rounded))
                     : ProfileAvatar(
                         profile: profile,
                         avatarUrl: activeProvider.avatarUrlFor(profile.id),
@@ -2358,7 +2358,7 @@ class _MainScreenState extends State<MainScreen>
             IconButton(
               tooltip: 'Switch user',
               onPressed: () => unawaited(_pushProfileSelection()),
-              icon: const Icon(Icons.keyboard_arrow_down, size: 22),
+              icon: const AppIcon(Symbols.keyboard_arrow_down_rounded, size: 22),
             ),
             const SizedBox(width: 12),
           ],

@@ -256,8 +256,8 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
                           const Positioned(
                             right: -3,
                             bottom: -3,
-                            child: Icon(
-                              Icons.workspace_premium,
+                            child: AppIcon(
+                              Symbols.workspace_premium_rounded,
                               color: Color(0xFFE5A00D),
                               size: 24,
                             ),
@@ -330,8 +330,8 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
                     child: CircleAvatar(
                       radius: 62,
                       backgroundColor: Color(0xFF424242),
-                      child: Icon(
-                        Icons.add,
+                      child: AppIcon(
+                        Symbols.add_rounded,
                         size: 78,
                         color: Color(0xFFE5A00D),
                       ),

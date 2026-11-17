@@ -1081,7 +1081,7 @@ class _LibrariesScreenState extends State<LibrariesScreen>
         if (Theme.of(context).platform == TargetPlatform.windows)
           const Padding(
             padding: EdgeInsets.only(right: 12),
-            child: Icon(Icons.grid_view, color: Colors.white70, size: 25),
+            child: AppIcon(Symbols.grid_view_rounded, color: Colors.white70, size: 25),
           ),
         FocusableActionBar(
           key: _actionBarKey,
