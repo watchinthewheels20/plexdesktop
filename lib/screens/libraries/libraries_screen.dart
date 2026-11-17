@@ -826,8 +826,9 @@ class _LibrariesScreenState extends State<LibrariesScreen>
                   LibraryServerLabel(
                     library: selectedLibrary,
                     badgeSize: 10,
-                    style: Theme.of(context).textTheme.labelSmall
-                        ?.copyWith(color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6)),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                    ),
                   ),
                 ],
               )

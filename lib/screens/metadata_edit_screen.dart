@@ -118,9 +118,9 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
               .schemaFor(draft)
               .expand((section) => section.fields)
               .where((field) => field.type == MetadataEditFieldType.stringList))
-        if (metadataStringList(draft.values[field.id])
-                .where((tag) => !metadataStringList(draft.originalValues[field.id]).contains(tag))
-                .toList()
+        if (metadataStringList(
+              draft.values[field.id],
+            ).where((tag) => !metadataStringList(draft.originalValues[field.id]).contains(tag)).toList()
             case final added when added.isNotEmpty)
           field.id: added,
     };

@@ -144,8 +144,10 @@ class _FocusableTabChipState extends State<FocusableTabChip> with FocusableChipS
 
     final label = Text(
       widget.label,
-      style: Theme.of(context).textTheme.labelLarge
-          ?.copyWith(color: foregroundColor, fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal),
+      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+        color: foregroundColor,
+        fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
+      ),
     );
 
     // The Windows fork follows Plex Web's flat underline navigation rather

@@ -205,8 +205,9 @@ class _SeasonEpisodePager {
     required List<MediaItem> episodes,
     required int total,
   }) {
-    _states[seasonId] = stateFor(seasonId)
-        .completeLoadMore(expectedOffset: expectedOffset, pageItems: episodes, total: total);
+    _states[seasonId] = stateFor(
+      seasonId,
+    ).completeLoadMore(expectedOffset: expectedOffset, pageItems: episodes, total: total);
   }
 
   void failMoreLoad(String seasonId) {

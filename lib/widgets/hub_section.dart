@@ -554,14 +554,16 @@ class HubSectionState extends State<HubSection> with MountedSetStateMixin, Skele
                         const SizedBox(width: 8),
                         Text(
                           '•',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7)),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           widget.hub.serverName!,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7)),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                          ),
                         ),
                       ],
                       if (widget.hub.more && !isKeyboardMode) ...[
