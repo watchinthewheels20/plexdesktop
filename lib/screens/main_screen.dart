@@ -2126,7 +2126,7 @@ class _MainScreenState extends State<MainScreen>
             IconButton(
               tooltip: 'Fullscreen',
               onPressed: () => unawaited(FullscreenStateManager().toggleFullscreen()),
-              icon: Icon(Icons.cast_connected_outlined, color: scheme.onSurfaceVariant, size: 27),
+              icon: Icon(Icons.fullscreen, color: scheme.onSurfaceVariant, size: 27),
             ),
             const SizedBox(width: 16),
             Tooltip(
