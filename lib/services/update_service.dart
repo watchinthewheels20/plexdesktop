@@ -15,7 +15,7 @@ import 'base_shared_preferences_service.dart';
 /// via auto_updater for native update dialogs and in-app installs.
 /// On all other platforms: falls back to GitHub API check + browser link dialog.
 class UpdateService {
-  static const String _githubRepo = 'edde746/plezy';
+  static const String _githubRepo = 'watchinthewheels20/plexdesktop';
   static const String _feedUrl = 'https://cdn.jsdelivr.net/gh/edde746/plezy@appcast/appcast.xml';
 
   static const String _keySkippedVersion = 'update_skipped_version';
@@ -41,6 +41,9 @@ class UpdateService {
   /// Whether the native auto_updater (Sparkle/WinSparkle) should be used.
   /// True on macOS (non-Homebrew) and installed Windows (has uninstaller).
   static bool get useNativeUpdater {
+    // The fork has no signed Sparkle/WinSparkle appcast; use the GitHub
+    // release checker instead of contacting Plezy's update service.
+    if (!const bool.fromEnvironment('ENABLE_NATIVE_UPDATE_FEED', defaultValue: false)) return false;
     if (!isUpdateCheckAvailable) return false;
     if (Platform.isMacOS) return !_isHomebrewInstall();
     if (Platform.isWindows) return _isInstalledApp() && !_isWingetInstall();
