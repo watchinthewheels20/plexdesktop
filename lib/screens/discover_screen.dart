@@ -1,13 +1,18 @@
 import 'dart:async';
+
 import '../media/ids.dart';
+
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:plezy/widgets/app_icon.dart';
+
 import '../widgets/server_activities_button.dart';
+
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart';
+
 import '../focus/focusable_action_bar.dart';
 import '../focus/hub_vertical_navigation.dart';
 import '../focus/locked_hub_controller.dart';
@@ -969,6 +974,14 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                     return _buildHeroSection();
                   }
                   // Add top padding when hero is not shown
+                  if (Platform.isWindows) {
+                    return const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(28, 30, 16, 16),
+                        child: Text('Home', style: TextStyle(fontSize: 24, color: Colors.white70)),
+                      ),
+                    );
+                  }
                   return SliverToBoxAdapter(
                     child: SizedBox(height: kToolbarHeight + MediaQuery.paddingOf(context).top + 16),
                   );
@@ -1065,7 +1078,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           // Overlaid app bar — excluded from default focus traversal so that
           // initial/tab-switch focus lands on content (hero/hubs), not the toolbar.
           // Toolbar buttons are still reachable via explicit UP from hero section.
-          Positioned(top: 0, left: 0, right: 0, child: ExcludeFocusTraversal(child: _buildOverlaidAppBar())),
+          if (!Platform.isWindows)
+            Positioned(top: 0, left: 0, right: 0, child: ExcludeFocusTraversal(child: _buildOverlaidAppBar())),
           if (_switchingProfile) const ProfileSwitchingOverlay(),
         ],
       ),

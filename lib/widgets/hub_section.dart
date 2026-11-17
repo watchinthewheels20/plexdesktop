@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:plezy/widgets/app_icon.dart';
 import 'package:material_symbols_icons/symbols.dart';
+
 import '../focus/dpad_navigator.dart';
 import '../focus/dpad_select_long_press_controller.dart';
 import '../focus/focus_theme.dart';
@@ -149,6 +150,8 @@ class HubSectionState extends State<HubSection> with MountedSetStateMixin, Skele
       ? 0.0
       : isTv
       ? TvLayoutConstants.shelfHorizontalInset
+      : Theme.of(context).platform == TargetPlatform.windows
+      ? 28.0
       : 12.0;
   double get _leadingPadding => _leadingPaddingFor(PlatformDetector.isTV());
   String get _focusMemoryKey {
@@ -495,9 +498,11 @@ class HubSectionState extends State<HubSection> with MountedSetStateMixin, Skele
     final isKeyboardMode = InputModeTracker.isKeyboardMode(context);
     final isTv = PlatformDetector.isTV();
     final leadingPadding = _leadingPaddingFor(isTv);
-    final titleStyle = Theme.of(
-      context,
-    ).textTheme.titleLarge?.copyWith(fontSize: isTv ? 26 : null, fontWeight: isTv ? FontWeight.w700 : null);
+    final isWindowsWeb = Theme.of(context).platform == TargetPlatform.windows;
+    final titleStyle = Theme.of(context).textTheme.titleLarge?.copyWith(
+      fontSize: isWindowsWeb ? 26 : (isTv ? 26 : null),
+      fontWeight: isWindowsWeb || isTv ? FontWeight.w700 : null,
+    );
 
     return Padding(
       padding: .only(
@@ -526,8 +531,10 @@ class HubSectionState extends State<HubSection> with MountedSetStateMixin, Skele
                   child: Row(
                     mainAxisSize: .min,
                     children: [
-                      AppIcon(widget.icon, fill: 1, size: isTv ? 28 : null),
-                      SizedBox(width: isTv ? 12 : 8),
+                      if (!isWindowsWeb) ...[
+                        AppIcon(widget.icon, fill: 1, size: isTv ? 28 : null),
+                        SizedBox(width: isTv ? 12 : 8),
+                      ],
                       Flexible(
                         child: Text(widget.hub.title, style: titleStyle, overflow: .ellipsis, maxLines: 1),
                       ),

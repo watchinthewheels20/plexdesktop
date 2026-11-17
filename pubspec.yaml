@@ -1,7 +1,7 @@
 name: plezy
-description: "A beautiful Plex and Jellyfin client for Flutter"
+description: "LoungeMedia - independent Windows desktop Plex client based on Plezy"
 publish_to: "none"
-version: 2.26.0+160
+version: 2.26.1+161
 
 environment:
   # Dart floor stays 3.12: freezed 3.x emits `final` constructor parameters,
@@ -175,6 +175,7 @@ flutter:
     - assets/go-noto-kurrent-hangul.ttf
     # Intro/credits chapter classifier; scripts/codegen/train_chapter_marker_model.py writes it.
     - assets/chapter_marker_model.bin
+    - assets/app_icons/previews/
     - assets/shaders/nvscaler/
     - assets/shaders/artcnn/
     - assets/shaders/anime4k/
@@ -182,7 +183,6 @@ flutter:
     - assets/rating_icons/
     # App icon picker thumbnails; scripts/codegen/generate_app_icons.py renders them from
     # assets/app_icons/source, which stays out of the bundle.
-    - assets/app_icons/previews/
   # Registered as UI font families so the Linux build, whose fontconfig may
   # lack CJK fonts, can fall back to the bundled subtitle fonts (mono_theme).
   fonts:

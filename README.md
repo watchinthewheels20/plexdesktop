@@ -1,3 +1,17 @@
+# LoungeMedia — Plex Web-style Windows client
+
+**Independent Windows x64 Plex client**, based on [Plezy](https://github.com/edde746/plezy) under GPL-3.0. LoungeMedia is neither made nor endorsed by Plex or the Plezy developers.
+
+The interface targets the familiar **Plex Web** layout (fixed sidebar, charcoal surfaces, gold selection, profile cards and tabbed libraries), while preserving the upstream authentication, mpv playback and media back end. The installed app is separate from Plezy.
+
+**Development status:** UI migration in progress. Not all Plex Web server administration features or visual surfaces are implemented. The official Plex Web application remains the fallback for unsupported server-side settings. Refer to [AGENTS.md](AGENTS.md) for coding and release instructions.
+
+**Windows builds:** `.github/workflows/build.yml` is configured to build the Windows x64 Inno Setup installer and portable archive from main after CI. Build output and release links must be verified before publishing.
+
+---
+
+## Upstream documentation (Plezy)
+
 <h1>
   <img src="assets/plezy.png" alt="Plezy Logo" height="24" style="vertical-align: middle;" />
   Plezy

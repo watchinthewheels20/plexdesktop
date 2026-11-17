@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:ui' show lerpDouble;
+
 import '../media/ids.dart';
+
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
@@ -170,6 +172,11 @@ class NavigationRailItem extends StatelessWidget {
     // The collapsed TV rail is a transparent overlay strip; a persistent
     // active pill over artwork is noise there, so it shows focus only.
     final showSelected = isSelected && !suppressSelectedBackground && !(collapsedLayout && PlatformDetector.isTV());
+    if (Platform.isWindows) {
+      if (focused) return t.accent.withValues(alpha: 0.24);
+      if (showSelected) return t.accent.withValues(alpha: 0.14);
+      return null;
+    }
     if (focused) return t.text.withValues(alpha: showSelected ? selectedFocusAlpha : focusAlpha);
     if (showSelected) return t.text.withValues(alpha: 0.1);
     return null;
@@ -272,7 +279,7 @@ class NavigationRailItem extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: fixedHeight ? 0 : 8),
       decoration: BoxDecoration(
         color: _indicatorColor(t, focused: focused, expansion: 1),
-        borderRadius: BorderRadius.circular(MonoTokens.radiusFull),
+        borderRadius: BorderRadius.circular(Platform.isWindows ? 3 : MonoTokens.radiusFull),
       ),
       child: _buildExpandedContent(context, t, labelOpacity: 1, showLeading: true),
     );
@@ -439,7 +446,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
   Timer? _collapseTimer;
   static const double collapsedWidth = 80.0;
   static const double tvCollapsedWidth = 48.0;
-  static const double expandedWidth = 220.0;
+  static const double expandedWidth = 320.0;
   static const double _horizontalPadding = 12.0;
   static const double _collapsedHorizontalPadding = 4.0;
   static const double _itemGap = 4.0;
@@ -636,7 +643,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
             if (_mountedFocusNodeFor(hiddenKey) != null) return hiddenKey;
           }
         }
-        return _kLibraries;
+        return Platform.isWindows ? _kHome : _kLibraries;
       case NavigationTabId.search:
         return _kSearch;
       case NavigationTabId.downloads:
@@ -765,11 +772,11 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
       if (!widget.isOfflineMode) ...[
         _kHome,
         if (hasNowPlaying) _kNowPlaying,
-        _kLibraries,
+        if (!Platform.isWindows) _kLibraries,
         // Library rows render inside ExcludeFocus(excluding: !_librariesExpanded
         // || isCollapsed); keep the D-pad order in lockstep with that render
         // condition so a collapsed rail never targets a focus-excluded row.
-        if (_librariesExpanded && !isCollapsed) ...[
+        if ((Platform.isWindows || _librariesExpanded) && !isCollapsed) ...[
           ..._focusKeysForLibraryRows(visibleRows),
           if (hasHiddenLibraries) ...[
             _kHiddenLibraries,
@@ -843,7 +850,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
 
   /// Calculate top padding for macOS traffic lights
   double _getTopPadding(BuildContext context) {
-    double basePadding = MediaQuery.paddingOf(context).top + 16;
+    double basePadding = MediaQuery.paddingOf(context).top + (Platform.isWindows ? 12 : 16);
 
     // On macOS, add extra padding for traffic lights (when not fullscreen)
     if (Platform.isMacOS) {
@@ -905,7 +912,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
         final hasExplore = hasExploreSource && SettingsService.instance.read(SettingsService.showExploreTab);
         // Server grouping: only when multi-server AND the user-facing toggle is on.
         final groupByServerSetting = SettingsService.instance.read(SettingsService.groupLibrariesByServer);
-        final showServerHeaders = serverIds.length > 1 && groupByServerSetting;
+        final showServerHeaders = Platform.isWindows || (serverIds.length > 1 && groupByServerSetting);
         _collapsedServerGroupKeys.retainAll(
           _buildServerGroupStateKeys(visibleLibraries, hiddenLibraries, showServerHeaders: showServerHeaders),
         );
@@ -983,7 +990,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
                             // trailing corners, extra-rounded plus an edge
                             // shadow while floating over content (modal)
                             // instead of pushing it.
-                            borderRadius: isCollapsed
+                            borderRadius: isCollapsed || Platform.isWindows
                                 ? BorderRadius.zero
                                 : BorderRadius.horizontal(
                                     right: Radius.circular(_isFloatingPanel ? overlayCornerRadius : t.radiusLg),
@@ -1019,9 +1026,11 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
                                     ],
                                     if (!widget.isOfflineMode) ...[
                                       _buildNavItem(
-                                        icon: Symbols.home_rounded,
-                                        selectedIcon: Symbols.home_rounded,
-                                        label: Translations.of(context).common.home,
+                                        icon: Platform.isWindows ? Symbols.arrow_back_rounded : Symbols.home_rounded,
+                                        selectedIcon: Platform.isWindows
+                                            ? Symbols.arrow_back_rounded
+                                            : Symbols.home_rounded,
+                                        label: Platform.isWindows ? 'Pinned' : Translations.of(context).common.home,
                                         isSelected: widget.selectedTab == NavigationTabId.discover,
                                         onTap: () => widget.onDestinationSelected(NavigationTabId.discover),
                                         focusNode: _focusTracker.get(_kHome),
@@ -1033,14 +1042,36 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
                                         _buildNowPlayingItem(nowPlayingTrack, musicService, isCollapsed: isCollapsed),
                                         const SizedBox(height: _itemGap),
                                       ],
-                                      _buildLibrariesSection(
-                                        visibleRows,
-                                        hiddenRows,
-                                        hiddenLibraries.length,
-                                        t,
-                                        isCollapsed: isCollapsed,
-                                      ),
+                                      if (Platform.isWindows) ...[
+                                        const SizedBox(height: 42),
+                                        if (librariesProvider.isLoading)
+                                          const Center(
+                                            child: Padding(
+                                              padding: EdgeInsets.all(16),
+                                              child: CircularProgressIndicator(),
+                                            ),
+                                          )
+                                        else ...[
+                                          if (visibleRows.isNotEmpty) _buildLibraryGroupedColumn(visibleRows, t),
+                                          if (hiddenLibraries.isNotEmpty) ...[
+                                            _buildHiddenLibrariesHeader(hiddenLibraries.length, t),
+                                            if (_hiddenLibrariesExpanded) _buildLibraryGroupedColumn(hiddenRows, t),
+                                          ],
+                                        ],
+                                      ] else
+                                        _buildLibrariesSection(
+                                          visibleRows,
+                                          hiddenRows,
+                                          hiddenLibraries.length,
+                                          t,
+                                          isCollapsed: isCollapsed,
+                                        ),
                                       const SizedBox(height: _itemGap),
+                                      if (Platform.isWindows)
+                                        const Padding(
+                                          padding: EdgeInsets.fromLTRB(18, 20, 0, 12),
+                                          child: Text('Plex', style: TextStyle(color: Color(0xFFE5A00D), fontSize: 17)),
+                                        ),
                                       if (context.watch<MultiServerProvider>().hasLiveTv) ...[
                                         _buildNavItem(
                                           icon: Symbols.live_tv_rounded,
@@ -1141,7 +1172,10 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
       selectedIcon: selectedIcon,
       label: Text(
         label,
-        style: TextStyle(fontSize: 14, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400),
+        style: TextStyle(
+          fontSize: Platform.isWindows ? 17 : 14,
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+        ),
         overflow: .ellipsis,
         maxLines: 1,
       ),
@@ -1399,12 +1433,17 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
     final backend = context.read<MultiServerProvider>().serverManager.getClient(serverId)?.backend;
     return _buildCollapsibleHeader(
       focusKey: _serverHeaderFocusKey(section, serverId),
-      icon: Symbols.dns_rounded,
-      iconSize: 14,
+      icon: Platform.isWindows ? Symbols.account_circle_rounded : Symbols.dns_rounded,
+      iconSize: Platform.isWindows ? 22 : 14,
       leading: backend == null ? null : BackendBadge(backend: backend, size: 14, color: t.textMuted),
       label: serverName,
-      labelStyle: TextStyle(fontSize: 11, fontWeight: .w600, letterSpacing: 0.4, color: t.textMuted),
-      verticalPadding: 6,
+      labelStyle: TextStyle(
+        fontSize: Platform.isWindows ? 18 : 11,
+        fontWeight: Platform.isWindows ? FontWeight.w400 : FontWeight.w600,
+        letterSpacing: 0.4,
+        color: Platform.isWindows ? t.accent : t.textMuted,
+      ),
+      verticalPadding: Platform.isWindows ? 15 : 6,
       isExpanded: !_collapsedServerGroupKeys.contains(_serverGroupStateKey(section, serverId)),
       onToggle: () => _toggleServerCollapse(section, serverId),
       t: t,
@@ -1425,7 +1464,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
       focusKey: _kHiddenLibraries,
       icon: Symbols.visibility_off_rounded,
       iconSize: 16,
-      label: Translations.of(context).libraries.hiddenLibrariesCount(count: count),
+      label: Platform.isWindows ? 'More' : Translations.of(context).libraries.hiddenLibrariesCount(count: count),
       labelStyle: TextStyle(fontSize: 12, fontWeight: .w500, color: t.textMuted),
       verticalPadding: 8,
       isExpanded: _hiddenLibrariesExpanded,
@@ -1519,9 +1558,9 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
           Text(
             library.title,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: Platform.isWindows ? 17 : 13,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? t.text : t.textMuted,
+              color: isSelected && Platform.isWindows ? t.accent : (isSelected ? t.text : t.textMuted),
             ),
             overflow: .ellipsis,
           ),
@@ -1538,7 +1577,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
       focusNode: focusNode,
       iconSize: 18,
       expandedHeight: 40,
-      suppressSelectedBackground: widget.isSidebarFocused,
+      suppressSelectedBackground: widget.isSidebarFocused && !Platform.isWindows,
       onNavigateRight: widget.onNavigateToContent,
     );
   }

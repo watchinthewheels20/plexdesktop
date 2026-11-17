@@ -88,15 +88,16 @@ void main() {
     }
   });
 
-  test('built-in palettes stay monochrome: accent is the text colour', () {
+  test('light and OLED stay monochrome while the dark web theme uses Plex gold', () {
     for (final MapEntry(key: name, value: palette) in _builtIns.entries) {
       final theme = monoTheme(palette);
       final tokens = theme.extension<MonoTokens>()!;
       final button = theme.filledButtonTheme.style!;
-      expect(palette.accent, palette.text, reason: name);
-      expect(tokens.accent, tokens.text, reason: name);
-      expect(theme.colorScheme.primary, palette.text, reason: name);
-      expect(button.backgroundColor!.resolve(const {}), palette.text, reason: name);
+      final expectedAccent = name == 'dark' ? const Color(0xFFE5A00D) : palette.text;
+      expect(palette.accent, expectedAccent, reason: name);
+      expect(tokens.accent, expectedAccent, reason: name);
+      expect(theme.colorScheme.primary, expectedAccent, reason: name);
+      expect(button.backgroundColor!.resolve(const {}), expectedAccent, reason: name);
       expect(theme.colorScheme.surfaceTint, palette.text, reason: name);
     }
     // The colour drawn on a filled button is unchanged: page background on
