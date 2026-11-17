@@ -123,15 +123,13 @@ class HubSection extends StatefulWidget {
     this.cardSizing = HubCardSizing.shelf,
     this.episodePosterModeOverride,
     this.focusScrollAlignment = 0.3,
-  }) : usesContinueWatchingAction =
-           usesContinueWatchingAction ?? isInContinueWatching;
+  }) : usesContinueWatchingAction = usesContinueWatchingAction ?? isInContinueWatching;
 
   @override
   State<HubSection> createState() => HubSectionState();
 }
 
-class HubSectionState extends State<HubSection>
-    with MountedSetStateMixin, SkeletonUpgradeScheduler {
+class HubSectionState extends State<HubSection> with MountedSetStateMixin, SkeletonUpgradeScheduler {
   late FocusNode _hubFocusNode;
   final ScrollController _scrollController = ScrollController();
 
@@ -164,23 +162,18 @@ class HubSectionState extends State<HubSection>
   // Per-step scroll glide; platform-specific, see
   // FocusTheme.navigationScrollDuration. Successive steps retarget the
   // animation so a drag chains into one continuous glide.
-  static Duration get _navigationScrollDuration =>
-      FocusTheme.navigationScrollDuration();
+  static Duration get _navigationScrollDuration => FocusTheme.navigationScrollDuration();
   final _selectLongPress = DpadSelectLongPressController();
 
   @override
   void initState() {
     super.initState();
-    _hubFocusNode = LockedFocusRowNode(
-      debugLabel: 'hub_${widget.hub.id}',
-      focusedItemRect: _focusedItemRect,
-    );
+    _hubFocusNode = LockedFocusRowNode(debugLabel: 'hub_${widget.hub.id}', focusedItemRect: _focusedItemRect);
     _hubFocusNode.addListener(_onFocusChange);
   }
 
   /// Total item count including the optional "View All" card
-  int get _totalItemCount =>
-      widget.hub.items.length + (widget.hub.more ? 1 : 0);
+  int get _totalItemCount => widget.hub.items.length + (widget.hub.more ? 1 : 0);
 
   @override
   void didUpdateWidget(HubSection oldWidget) {
@@ -189,20 +182,16 @@ class HubSectionState extends State<HubSection>
       _itemKeys.clear();
       _mediaCardKeys.clear();
       _displacedFocusItem = null;
-    } else if (widget.hub.items.length != oldWidget.hub.items.length ||
-        widget.hub.more != oldWidget.hub.more) {
+    } else if (widget.hub.items.length != oldWidget.hub.items.length || widget.hub.more != oldWidget.hub.more) {
       _itemKeys.removeWhere((index, _) => index >= _totalItemCount);
-      _mediaCardKeys.removeWhere(
-        (index, _) => index >= widget.hub.items.length,
-      );
+      _mediaCardKeys.removeWhere((index, _) => index >= widget.hub.items.length);
     }
 
     if (widget.hub.id == oldWidget.hub.id) {
       _followFocusedItem(oldWidget.hub.items);
     }
 
-    if (widget.hub.items.length != oldWidget.hub.items.length ||
-        widget.hub.more != oldWidget.hub.more) {
+    if (widget.hub.items.length != oldWidget.hub.items.length || widget.hub.more != oldWidget.hub.more) {
       final maxIndex = _totalItemCount == 0 ? 0 : _totalItemCount - 1;
       if (_focusedIndex > maxIndex) {
         _focusedIndex = maxIndex;
@@ -218,14 +207,8 @@ class HubSectionState extends State<HubSection>
   /// present the positional clamp above applies unchanged.
   void _followFocusedItem(List<MediaItem> oldItems) {
     if (identical(oldItems, widget.hub.items)) return;
-    final focused = _focusedIndex >= 0 && _focusedIndex < oldItems.length
-        ? oldItems[_focusedIndex]
-        : null;
-    final followed = followFocus(
-      widget.hub.items,
-      focused: focused,
-      displaced: _displacedFocusItem,
-    );
+    final focused = _focusedIndex >= 0 && _focusedIndex < oldItems.length ? oldItems[_focusedIndex] : null;
+    final followed = followFocus(widget.hub.items, focused: focused, displaced: _displacedFocusItem);
     _displacedFocusItem = followed.displaced;
     final followedIndex = followed.index;
     if (followedIndex == -1 || followedIndex == _focusedIndex) return;
@@ -235,10 +218,7 @@ class HubSectionState extends State<HubSection>
       // didUpdateWidget runs during the build phase; notifying listeners or
       // jumping scroll positions here could setState mid-build upstream.
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted ||
-            _focusedIndex != followedIndex ||
-            !_hubFocusNode.hasFocus)
-          return;
+        if (!mounted || _focusedIndex != followedIndex || !_hubFocusNode.hasFocus) return;
         _notifyFocusedItemChanged();
         _scrollToIndex(followedIndex, animate: false);
       });
@@ -285,10 +265,7 @@ class HubSectionState extends State<HubSection>
 
   /// Request focus using the stored memory for this hub
   void requestFocusFromMemory() {
-    final index = widget.focusMemory.getForHub(
-      _focusMemoryKey,
-      _totalItemCount,
-    );
+    final index = widget.focusMemory.getForHub(_focusMemoryKey, _totalItemCount);
     requestFocusAt(index);
   }
 
@@ -529,8 +506,7 @@ class HubSectionState extends State<HubSection>
 
     return Padding(
       padding: .only(
-        bottom:
-            isTv && !widget.inset && widget.cardSizing == HubCardSizing.shelf
+        bottom: isTv && !widget.inset && widget.cardSizing == HubCardSizing.shelf
             ? TvLayoutConstants.shelfVerticalGap
             : 0,
       ),
@@ -542,20 +518,11 @@ class HubSectionState extends State<HubSection>
           Padding(
             padding: widget.inset
                 ? EdgeInsets.symmetric(vertical: isTv ? 6 : 2)
-                : EdgeInsets.fromLTRB(
-                    leadingPadding - 4,
-                    isTv ? 6 : 2,
-                    8,
-                    isTv ? 8 : 2,
-                  ),
+                : EdgeInsets.fromLTRB(leadingPadding - 4, isTv ? 6 : 2, 8, isTv ? 8 : 2),
             child: ExcludeFocus(
               child: InkWell(
-                mouseCursor: widget.hub.more
-                    ? SystemMouseCursors.click
-                    : MouseCursor.defer,
-                onTap: widget.hub.more
-                    ? () => _navigateToHubDetail(context)
-                    : null,
+                mouseCursor: widget.hub.more ? SystemMouseCursors.click : MouseCursor.defer,
+                onTap: widget.hub.more ? () => _navigateToHubDetail(context) : null,
                 borderRadius: BorderRadius.circular(tokens(context).radiusSm),
                 child: Padding(
                   padding: widget.inset
@@ -569,55 +536,37 @@ class HubSectionState extends State<HubSection>
                         SizedBox(width: isTv ? 12 : 8),
                       ],
                       Flexible(
-                        child: Text(
-                          widget.hub.title,
-                          style: titleStyle,
-                          overflow: .ellipsis,
-                          maxLines: 1,
-                        ),
+                        child: Text(widget.hub.title, style: titleStyle, overflow: .ellipsis, maxLines: 1),
                       ),
                       if (widget.totalResults case final totalResults?) ...[
                         SizedBox(width: isTv ? 12 : 8),
                         Text(
                           t.explore.totalResults(n: totalResults),
                           maxLines: 1,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface
-                                    .withValues(alpha: 0.62),
-                                fontSize: isTv ? 17 : null,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.62),
+                            fontSize: isTv ? 17 : null,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
-                      if (widget.showServerName &&
-                          widget.hub.serverName != null) ...[
+                      if (widget.showServerName && widget.hub.serverName != null) ...[
                         const SizedBox(width: 8),
                         Text(
                           '•',
                           style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.primary
-                                    .withValues(alpha: 0.7),
-                              ),
+                              ?.copyWith(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7)),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           widget.hub.serverName!,
                           style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.primary
-                                    .withValues(alpha: 0.7),
-                              ),
+                              ?.copyWith(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7)),
                         ),
                       ],
                       if (widget.hub.more && !isKeyboardMode) ...[
                         const SizedBox(width: 4),
-                        AppIcon(
-                          Symbols.chevron_right_rounded,
-                          fill: 1,
-                          size: isTv ? 26 : 20,
-                        ),
+                        AppIcon(Symbols.chevron_right_rounded, fill: 1, size: isTv ? 26 : 20),
                       ],
                     ],
                   ),
@@ -642,15 +591,10 @@ class HubSectionState extends State<HubSection>
                     if (svc == null) return const SizedBox.shrink();
                     final density = svc.read(SettingsService.libraryDensity);
                     final EpisodePosterMode episodePosterMode =
-                        widget.episodePosterModeOverride ??
-                        svc.read(SettingsService.episodePosterMode);
+                        widget.episodePosterModeOverride ?? svc.read(SettingsService.episodePosterMode);
 
-                    final hasEpisodes = widget.hub.items.any(
-                      (item) => item.usesWideAspectRatio(episodePosterMode),
-                    );
-                    final hasNonEpisodes = widget.hub.items.any(
-                      (item) => !item.usesWideAspectRatio(episodePosterMode),
-                    );
+                    final hasEpisodes = widget.hub.items.any((item) => item.usesWideAspectRatio(episodePosterMode));
+                    final hasNonEpisodes = widget.hub.items.any((item) => !item.usesWideAspectRatio(episodePosterMode));
 
                     final isMixedHub = hasEpisodes && hasNonEpisodes;
 
@@ -660,28 +604,18 @@ class HubSectionState extends State<HubSection>
                     // same gate as TvBrowseRail — since episodes already fold
                     // the mode into usesWideAspectRatio (#2036).
                     final useWideLayout =
-                        hasEpisodes &&
-                        (!hasNonEpisodes ||
-                            episodePosterMode ==
-                                EpisodePosterMode.episodeThumbnail);
+                        hasEpisodes && (!hasNonEpisodes || episodePosterMode == EpisodePosterMode.episodeThumbnail);
 
                     // Music hubs render square album/artist artwork
                     final isSquareHub =
                         widget.hub.items.isNotEmpty &&
-                        widget.hub.items.every(
-                          (item) =>
-                              item.cardShape(episodePosterMode) ==
-                              CardShape.square,
-                        );
+                        widget.hub.items.every((item) => item.cardShape(episodePosterMode) == CardShape.square);
 
                     // A hub row is one row of the grid: cells pack with the
                     // same gutter the grid uses, so a row and the "see all"
                     // grid behind it render the same card at equal width.
-                    final gridGap = svc
-                        .read(SettingsService.gridSpacing)
-                        .gridGap;
-                    final cardWidth =
-                        isTv && widget.cardSizing == HubCardSizing.shelf
+                    final gridGap = svc.read(SettingsService.gridSpacing).gridGap;
+                    final cardWidth = isTv && widget.cardSizing == HubCardSizing.shelf
                         ? _getTvCardWidth(
                             context,
                             constraints.maxWidth,
@@ -696,8 +630,7 @@ class HubSectionState extends State<HubSection>
                             density: density,
                             useWideAspectRatio: useWideLayout,
                           );
-                    final posterWidth =
-                        cardWidth - 6; // 3px padding on each side
+                    final posterWidth = cardWidth - 6; // 3px padding on each side
                     final posterHeight = useWideLayout
                         ? posterWidth *
                               (9 / 16) // 16:9 for wide layout
@@ -716,8 +649,7 @@ class HubSectionState extends State<HubSection>
 
                     final containerHeight = posterHeight + (isTv ? 48 : 33);
                     final focusBorderWidth = FocusTheme.focusBorderWidth;
-                    final focusExtra =
-                        focusBorderWidth * 2; // border on both sides
+                    final focusExtra = focusBorderWidth * 2; // border on both sides
                     _itemExtent = cardWidth + focusExtra + cardGap;
 
                     // Everything the card closures capture; a change flushes
@@ -736,12 +668,7 @@ class HubSectionState extends State<HubSection>
                     );
 
                     return SizedBox(
-                      height:
-                          containerHeight +
-                          focusExtra +
-                          (isTv
-                              ? 12
-                              : 4), // extra for scale + border top/bottom
+                      height: containerHeight + focusExtra + (isTv ? 12 : 4), // extra for scale + border top/bottom
                       child: HorizontalScrollWithArrows(
                         controller: _scrollController,
                         builder: (scrollController) => ListView.builder(
@@ -758,21 +685,13 @@ class HubSectionState extends State<HubSection>
                           // spike. Cards inflate as they scroll in instead (a few ms
                           // each). TV keeps the default: d-pad animateTo benefits from
                           // the prefetch and TV rows inflate via the focus path anyway.
-                          scrollCacheExtent: isTv
-                              ? null
-                              : const ScrollCacheExtent.pixels(0),
+                          scrollCacheExtent: isTv ? null : const ScrollCacheExtent.pixels(0),
                           padding: widget.inset
                               ? EdgeInsets.symmetric(vertical: isTv ? 6 : 2)
-                              : EdgeInsets.symmetric(
-                                  horizontal: isTv ? leadingPadding : 8,
-                                  vertical: isTv ? 6 : 2,
-                                ),
-                          itemCount: isKeyboardMode
-                              ? _totalItemCount
-                              : widget.hub.items.length,
+                              : EdgeInsets.symmetric(horizontal: isTv ? leadingPadding : 8, vertical: isTv ? 6 : 2),
+                          itemCount: isKeyboardMode ? _totalItemCount : widget.hub.items.length,
                           itemBuilder: (context, index) {
-                            final isItemFocused =
-                                hasFocus && index == _focusedIndex;
+                            final isItemFocused = hasFocus && index == _focusedIndex;
 
                             if (index == widget.hub.items.length) {
                               return Padding(
@@ -795,24 +714,15 @@ class HubSectionState extends State<HubSection>
                                           AppIcon(
                                             Symbols.arrow_forward_rounded,
                                             size: isTv ? 42 : 32,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface
-                                                .withValues(alpha: 0.7),
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
                                             t.common.viewAll,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .labelMedium
-                                                ?.copyWith(
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurface
-                                                      .withValues(alpha: 0.7),
-                                                  fontSize: isTv ? 16 : null,
-                                                ),
+                                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                              fontSize: isTv ? 16 : null,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -840,10 +750,7 @@ class HubSectionState extends State<HubSection>
                               keyboardMode: isKeyboardMode,
                               skeleton: () => Padding(
                                 padding: cardPadding,
-                                child: SizedBox(
-                                  width: cardWidth,
-                                  child: const SkeletonMediaCard(),
-                                ),
+                                child: SizedBox(width: cardWidth, child: const SkeletonMediaCard()),
                               ),
                               build: () => Padding(
                                 key: _itemKeyFor(index),
@@ -856,14 +763,11 @@ class HubSectionState extends State<HubSection>
                                   // gesture arena. Passing null lets the wrapper collapse
                                   // to the bare card outside keyboard mode instead of
                                   // building a second dead gesture-detector stack per card.
-                                  onTap: isKeyboardMode
-                                      ? () => _onItemTapped(index)
-                                      : null,
+                                  onTap: isKeyboardMode ? () => _onItemTapped(index) : null,
                                   onLongPress: isKeyboardMode
                                       ? () {
                                           _onItemTapped(index);
-                                          _mediaCardKeys[index]?.currentState
-                                              ?.showContextMenu();
+                                          _mediaCardKeys[index]?.currentState?.showContextMenu();
                                         }
                                       : null,
                                   delegateFocusBorder: true,
@@ -873,8 +777,7 @@ class HubSectionState extends State<HubSection>
                                     width: cardWidth,
                                     height: posterHeight,
                                     onRefresh: widget.onRefresh,
-                                    onRemoveFromContinueWatching:
-                                        widget.onRemoveFromContinueWatching,
+                                    onRemoveFromContinueWatching: widget.onRemoveFromContinueWatching,
                                     onTap: widget.onItemTap == null
                                         ? null
                                         : () {
@@ -888,13 +791,10 @@ class HubSectionState extends State<HubSection>
                                             widget.onItemLongPress!(item);
                                           },
                                     viewModeOverride: ViewMode.grid,
-                                    isInContinueWatching:
-                                        widget.isInContinueWatching,
-                                    usesContinueWatchingAction:
-                                        widget.usesContinueWatchingAction,
+                                    isInContinueWatching: widget.isInContinueWatching,
+                                    usesContinueWatchingAction: widget.usesContinueWatchingAction,
                                     mixedHubContext: isMixedHub,
-                                    episodePosterModeOverride:
-                                        episodePosterMode,
+                                    episodePosterModeOverride: episodePosterMode,
                                   ),
                                 ),
                               ),
@@ -912,10 +812,7 @@ class HubSectionState extends State<HubSection>
               padding: widget.inset
                   ? const EdgeInsets.symmetric(vertical: 8)
                   : const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text(
-                t.messages.noItemsAvailable,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+              child: Text(t.messages.noItemsAvailable, style: Theme.of(context).textTheme.bodySmall),
             ),
         ],
       ),

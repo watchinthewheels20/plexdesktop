@@ -84,8 +84,7 @@ class FocusableTabChip extends StatefulWidget {
   State<FocusableTabChip> createState() => _FocusableTabChipState();
 }
 
-class _FocusableTabChipState extends State<FocusableTabChip>
-    with FocusableChipStateMixin<FocusableTabChip> {
+class _FocusableTabChipState extends State<FocusableTabChip> with FocusableChipStateMixin<FocusableTabChip> {
   @override
   FocusNode? get widgetFocusNode => widget.focusNode;
 
@@ -124,11 +123,7 @@ class _FocusableTabChipState extends State<FocusableTabChip>
 
     if (widget.isSelected && showFocus) {
       // Selected + focused: dim the primary color slightly
-      backgroundColor = Color.lerp(
-        colorScheme.primary,
-        colorScheme.surface,
-        0.25,
-      )!;
+      backgroundColor = Color.lerp(colorScheme.primary, colorScheme.surface, 0.25)!;
       foregroundColor = colorScheme.onPrimary;
     } else if (widget.isSelected || showFocus) {
       // Selected or focused (but not both): full primary
@@ -137,9 +132,7 @@ class _FocusableTabChipState extends State<FocusableTabChip>
     } else {
       // Neither selected nor focused
       if (PlatformDetector.isTV()) {
-        backgroundColor = colorScheme.secondaryContainer.withValues(
-          alpha: 0.38,
-        );
+        backgroundColor = colorScheme.secondaryContainer.withValues(alpha: 0.38);
         foregroundColor = colorScheme.onSecondaryContainer;
       } else {
         backgroundColor = colorScheme.surfaceContainerHighest;
@@ -151,16 +144,13 @@ class _FocusableTabChipState extends State<FocusableTabChip>
 
     final label = Text(
       widget.label,
-      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-        color: foregroundColor,
-        fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
-      ),
+      style: Theme.of(context).textTheme.labelLarge
+          ?.copyWith(color: foregroundColor, fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal),
     );
 
     // The Windows fork follows Plex Web's flat underline navigation rather
     // than Plezy's Material pill tabs. Preserve the existing focus semantics.
-    if (Theme.of(context).platform == TargetPlatform.windows &&
-        widget.topImage == null) {
+    if (Theme.of(context).platform == TargetPlatform.windows && widget.topImage == null) {
       return FocusBuilders.buildFocusableChip(
         context: context,
         focusNode: focusNode,
@@ -177,21 +167,12 @@ class _FocusableTabChipState extends State<FocusableTabChip>
             Text(
               widget.label,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: widget.isSelected || showFocus
-                    ? colorScheme.primary
-                    : colorScheme.onSurfaceVariant,
-                fontWeight: widget.isSelected
-                    ? FontWeight.w600
-                    : FontWeight.w400,
+                color: widget.isSelected || showFocus ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
             const SizedBox(height: 8),
-            Container(
-              height: 2,
-              color: widget.isSelected
-                  ? colorScheme.primary
-                  : Colors.transparent,
-            ),
+            Container(height: 2, color: widget.isSelected ? colorScheme.primary : Colors.transparent),
           ],
         ),
       );
@@ -205,19 +186,14 @@ class _FocusableTabChipState extends State<FocusableTabChip>
       onTap: widget.onSelect,
       semanticLabel: widget.label,
       selected: widget.isSelected,
-      padding: hasImage
-          ? const EdgeInsets.all(8)
-          : const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: hasImage ? const EdgeInsets.all(8) : const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       backgroundColor: backgroundColor,
       borderRadius: hasImage ? 12 : 20,
       child: hasImage
           ? Column(
               mainAxisSize: .min,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: widget.topImage!,
-                ),
+                ClipRRect(borderRadius: BorderRadius.circular(6), child: widget.topImage!),
                 const SizedBox(height: 6),
                 label,
               ],

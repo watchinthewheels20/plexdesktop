@@ -80,8 +80,7 @@ class LibraryDensity {
   static const int defaultValue = 3;
 
   /// Returns a 0.0–1.0 factor for interpolation (0 = most compact, 1 = most comfortable).
-  static double factor(int density) =>
-      (density.clamp(min, max) - min) / (max - min);
+  static double factor(int density) => (density.clamp(min, max) - min) / (max - min);
 }
 
 /// Gap between cards in media grids (#2083, #1597). Touch, pointer and car
@@ -159,14 +158,7 @@ enum SubAssOverride { no, yes, scale, force, strip }
 /// typeset against). Android (libass overlay) instead downscales by a fixed
 /// fraction of the surface — [screen] is full, and [threeQuarter]/[half]/[third]/
 /// [quarter] trade sharpness for raster throughput on render-bound low-end TVs.
-enum SubtitleRenderResolution {
-  screen,
-  video,
-  threeQuarter,
-  half,
-  third,
-  quarter,
-}
+enum SubtitleRenderResolution { screen, video, threeQuarter, half, third, quarter }
 
 /// Who reduces HDR content to what the display can actually show, on the Linux
 /// native video plane.
@@ -272,8 +264,7 @@ class _LibraryDensityPref extends Pref<int> {
   int readFrom(BaseSharedPreferencesService svc) {
     try {
       final intVal = svc.prefs.getInt(key);
-      if (intVal != null)
-        return intVal.clamp(LibraryDensity.min, LibraryDensity.max);
+      if (intVal != null) return intVal.clamp(LibraryDensity.min, LibraryDensity.max);
     } on TypeError {
       // Stored value is a String from old enum format — fall through to migration.
     }
@@ -308,12 +299,10 @@ class AutomotiveUiScale {
 class _AutomotiveUiScalePref extends Pref<double> {
   const _AutomotiveUiScalePref() : super('automotive_ui_scale');
   @override
-  double get resolvedDefault =>
-      PlatformDetector.isAutomotive() ? AutomotiveUiScale.defaultValue : 1.0;
+  double get resolvedDefault => PlatformDetector.isAutomotive() ? AutomotiveUiScale.defaultValue : 1.0;
   @override
   double fromJson(Object? value) {
-    if (value is! num || !value.isFinite)
-      throw const FormatException('Expected a finite number');
+    if (value is! num || !value.isFinite) throw const FormatException('Expected a finite number');
     return value.toDouble();
   }
 
@@ -323,34 +312,21 @@ class _AutomotiveUiScalePref extends Pref<double> {
     // Tolerant read, not `prefs.getDouble`: this is read while building the root
     // app, so a mistyped stored value would turn every launch into the error
     // widget instead of dropping the key (#1732).
-    return svc
-        .readDouble(key, defaultValue: fallback)
-        .clamp(AutomotiveUiScale.min, AutomotiveUiScale.max)
-        .toDouble();
+    return svc.readDouble(key, defaultValue: fallback).clamp(AutomotiveUiScale.min, AutomotiveUiScale.max).toDouble();
   }
 
   @override
   Future<void> writeTo(BaseSharedPreferencesService svc, double value) =>
-      svc.writeDouble(
-        key,
-        value.clamp(AutomotiveUiScale.min, AutomotiveUiScale.max).toDouble(),
-      );
+      svc.writeDouble(key, value.clamp(AutomotiveUiScale.min, AutomotiveUiScale.max).toDouble());
 }
 
 /// Migrates from the legacy `use_season_poster` boolean key.
 class _EpisodePosterModePref extends EnumPref<EpisodePosterMode> {
   const _EpisodePosterModePref()
-    : super(
-        'episode_poster_mode',
-        values: EpisodePosterMode.values,
-        defaultValue: EpisodePosterMode.episodeThumbnail,
-      );
+    : super('episode_poster_mode', values: EpisodePosterMode.values, defaultValue: EpisodePosterMode.episodeThumbnail);
 
   @override
-  Future<void> removeFrom(
-    BaseSharedPreferencesService svc, {
-    void Function()? checkCurrent,
-  }) async {
+  Future<void> removeFrom(BaseSharedPreferencesService svc, {void Function()? checkCurrent}) async {
     checkCurrent?.call();
     await svc.prefs.remove(_legacyUseSeasonPosterKey);
     await super.removeFrom(svc, checkCurrent: checkCurrent);
@@ -361,9 +337,7 @@ class _EpisodePosterModePref extends EnumPref<EpisodePosterMode> {
     if (svc.prefs.containsKey(key)) return super.readFrom(svc);
     final legacyValue = svc.readNullableBool(_legacyUseSeasonPosterKey);
     if (legacyValue != null) {
-      final migrated = legacyValue
-          ? EpisodePosterMode.seasonPoster
-          : EpisodePosterMode.seriesPoster;
+      final migrated = legacyValue ? EpisodePosterMode.seasonPoster : EpisodePosterMode.seriesPoster;
       svc.prefs.remove(_legacyUseSeasonPosterKey);
       svc.prefs.setString(key, migrated.name);
       return migrated;
@@ -389,10 +363,7 @@ class PlayerSettingScopePref extends EnumPref<PlayerSettingScope> {
   }) : super(values: PlayerSettingScope.values);
 
   @override
-  Future<void> writeTo(
-    BaseSharedPreferencesService svc,
-    PlayerSettingScope value,
-  ) async {
+  Future<void> writeTo(BaseSharedPreferencesService svc, PlayerSettingScope value) async {
     final entersKeyedScope = value.keysEntries && !readFrom(svc).keysEntries;
     await super.writeTo(svc, value);
     if (entersKeyedScope) await resetGlobals(svc);
@@ -426,10 +397,7 @@ class LegacyBoolEnumPref<T extends Enum> extends EnumPref<T> {
   T fromLegacy(bool value) => value ? legacyTrue : legacyFalse;
 
   @override
-  Future<void> removeFrom(
-    BaseSharedPreferencesService svc, {
-    void Function()? checkCurrent,
-  }) async {
+  Future<void> removeFrom(BaseSharedPreferencesService svc, {void Function()? checkCurrent}) async {
     checkCurrent?.call();
     await svc.prefs.remove(legacyKey);
     await super.removeFrom(svc, checkCurrent: checkCurrent);
@@ -470,14 +438,11 @@ class _SkipMarkerModePref extends LegacyBoolEnumPref<SkipMarkerMode> {
 class _AppLocalePref extends Pref<AppLocale> {
   const _AppLocalePref() : super('app_locale');
   @override
-  AppLocale get resolvedDefault =>
-      resolvePreferredAppLocale(PlatformDispatcher.instance.locales);
+  AppLocale get resolvedDefault => resolvePreferredAppLocale(PlatformDispatcher.instance.locales);
   @override
-  AppLocale fromJson(Object? value) =>
-      AppLocale.values.firstWhere((v) => v.name == value);
+  AppLocale fromJson(Object? value) => AppLocale.values.firstWhere((v) => v.name == value);
   @override
-  List<Object?> get jsonChoices =>
-      AppLocale.values.map((v) => v.name).toList(growable: false);
+  List<Object?> get jsonChoices => AppLocale.values.map((v) => v.name).toList(growable: false);
 
   @override
   AppLocale readFrom(BaseSharedPreferencesService svc) {
@@ -489,16 +454,14 @@ class _AppLocalePref extends Pref<AppLocale> {
   }
 
   @override
-  Future<void> writeTo(BaseSharedPreferencesService svc, AppLocale value) =>
-      svc.writeString(key, value.name);
+  Future<void> writeTo(BaseSharedPreferencesService svc, AppLocale value) => svc.writeString(key, value.name);
 }
 
 /// Uses a macOS-disabled default and is forced off when [PlatformDetector] disables PiP.
 class _AutoPipPref extends Pref<bool> {
   const _AutoPipPref() : super('auto_pip');
   @override
-  bool get resolvedDefault =>
-      PlatformDetector.supportsPictureInPicture() && !Platform.isMacOS;
+  bool get resolvedDefault => PlatformDetector.supportsPictureInPicture() && !Platform.isMacOS;
 
   @override
   bool readFrom(BaseSharedPreferencesService svc) {
@@ -507,8 +470,7 @@ class _AutoPipPref extends Pref<bool> {
   }
 
   @override
-  Future<void> writeTo(BaseSharedPreferencesService svc, bool value) =>
-      svc.writeBool(key, value);
+  Future<void> writeTo(BaseSharedPreferencesService svc, bool value) => svc.writeBool(key, value);
 }
 
 class _UseExternalPlayerPref extends Pref<bool> {
@@ -523,8 +485,7 @@ class _UseExternalPlayerPref extends Pref<bool> {
   }
 
   @override
-  Future<void> writeTo(BaseSharedPreferencesService svc, bool value) =>
-      svc.writeBool(key, value);
+  Future<void> writeTo(BaseSharedPreferencesService svc, bool value) => svc.writeBool(key, value);
 }
 
 /// Native Dolby playback: bitstreaming on Android TV and desktop, Apple's
@@ -534,9 +495,7 @@ class _UseExternalPlayerPref extends Pref<bool> {
 class _AudioPassthroughPref extends Pref<bool> {
   const _AudioPassthroughPref() : super('audio_passthrough');
   @override
-  bool get resolvedDefault =>
-      PlatformDetector.isAppleTV() ||
-      (Platform.isAndroid && PlatformDetector.isTV());
+  bool get resolvedDefault => PlatformDetector.isAppleTV() || (Platform.isAndroid && PlatformDetector.isTV());
 
   @override
   bool readFrom(BaseSharedPreferencesService svc) {
@@ -556,8 +515,7 @@ class _AudioPassthroughPref extends Pref<bool> {
   }
 
   @override
-  Future<void> writeTo(BaseSharedPreferencesService svc, bool value) =>
-      svc.writeBool(key, value);
+  Future<void> writeTo(BaseSharedPreferencesService svc, bool value) => svc.writeBool(key, value);
 }
 
 String? _trimEmptyAsNull(String? v) {
@@ -593,10 +551,7 @@ class _MpvConfigTextPref extends StringPref {
   const _MpvConfigTextPref() : super('mpv_config_text');
 
   @override
-  Future<void> removeFrom(
-    BaseSharedPreferencesService svc, {
-    void Function()? checkCurrent,
-  }) async {
+  Future<void> removeFrom(BaseSharedPreferencesService svc, {void Function()? checkCurrent}) async {
     checkCurrent?.call();
     await svc.prefs.remove(_legacyMpvConfigEntriesKey);
     await super.removeFrom(svc, checkCurrent: checkCurrent);
@@ -611,17 +566,11 @@ class _MpvConfigTextPref extends StringPref {
     if (legacyJson == null) return '';
 
     try {
-      final migrated = _legacyMpvEntriesToText(
-        json.decode(legacyJson) as List<dynamic>,
-      );
+      final migrated = _legacyMpvEntriesToText(json.decode(legacyJson) as List<dynamic>);
       svc.prefs.setString(key, migrated);
       return migrated;
     } catch (e, st) {
-      appLogger.w(
-        'SettingsService: failed to migrate mpv config',
-        error: e,
-        stackTrace: st,
-      );
+      appLogger.w('SettingsService: failed to migrate mpv config', error: e, stackTrace: st);
       return '';
     }
   }
@@ -689,18 +638,11 @@ class _PreferenceGroupListenable extends ChangeNotifier {
 
 class SettingsService extends BaseSharedPreferencesService {
   static const String defaultIntroPattern = PlaybackExtras.defaultIntroPattern;
-  static const String defaultCreditsPattern =
-      PlaybackExtras.defaultCreditsPattern;
+  static const String defaultCreditsPattern = PlaybackExtras.defaultCreditsPattern;
 
-  static const enableDebugLogging = BoolPref(
-    'enable_debug_logging',
-    onWrite: setLoggerLevel,
-  );
+  static const enableDebugLogging = BoolPref('enable_debug_logging', onWrite: setLoggerLevel);
   static const crashReporting = BoolPref('crash_reporting', defaultValue: true);
-  static const enableHardwareDecoding = BoolPref(
-    'enable_hardware_decoding',
-    defaultValue: true,
-  );
+  static const enableHardwareDecoding = BoolPref('enable_hardware_decoding', defaultValue: true);
   static const enableHDR = BoolPref('enable_hdr', defaultValue: true);
   // Linux native video plane only. Defaults to the compositor: photographed on a
   // 400-nit HDR output against a PQ chart, the compositor keeps 400 -> 1000 nits
@@ -713,64 +655,29 @@ class SettingsService extends BaseSharedPreferencesService {
     values: HdrToneMapping.values,
     defaultValue: HdrToneMapping.compositor,
   );
-  static const viewMode = EnumPref<ViewMode>(
-    'view_mode',
-    values: ViewMode.values,
-    defaultValue: ViewMode.grid,
-  );
+  static const viewMode = EnumPref<ViewMode>('view_mode', values: ViewMode.values, defaultValue: ViewMode.grid);
   static const seekTimeSmall = IntPref('seek_time_small', defaultValue: 10);
   static const seekTimeLarge = IntPref('seek_time_large', defaultValue: 30);
   static const rewindOnResume = IntPref('rewind_on_resume');
   static bool _defaultShowHero() => !Platform.isWindows;
-  static const showHeroSection = BoolPref(
-    'show_hero_section',
-    defaultValueProvider: _defaultShowHero,
-  );
-  static const tvFullCardLayout = BoolPref(
-    'tv_full_card_layout',
-    defaultValue: false,
-  );
+  static const showHeroSection = BoolPref('show_hero_section', defaultValueProvider: _defaultShowHero);
+  static const tvFullCardLayout = BoolPref('tv_full_card_layout', defaultValue: false);
   static const focusGlow = BoolPref('focus_glow', defaultValue: true);
   static const useGlobalHubs = BoolPref('use_global_hubs', defaultValue: true);
   static const showServerNameOnHubs = BoolPref('show_server_name_on_hubs');
-  static const groupLibrariesByServer = BoolPref(
-    'group_libraries_by_server',
-    defaultValue: true,
-  );
-  static const sleepTimerDuration = IntPref(
-    'sleep_timer_duration',
-    defaultValue: 30,
-  );
+  static const groupLibrariesByServer = BoolPref('group_libraries_by_server', defaultValue: true);
+  static const sleepTimerDuration = IntPref('sleep_timer_duration', defaultValue: 30);
   static const audioSyncOffset = IntPref('audio_sync_offset');
   static const subtitleSyncOffset = IntPref('subtitle_sync_offset');
-  static const subtitleSearchLanguage = NullableStringPref(
-    'subtitle_search_language',
-  );
+  static const subtitleSearchLanguage = NullableStringPref('subtitle_search_language');
   static const volume = DoublePref('volume', defaultValue: 100.0);
   static const rotationLocked = BoolPref('rotation_locked', defaultValue: true);
-  static const subtitleFontSize = IntPref(
-    'subtitle_font_size',
-    defaultValue: 38,
-  );
-  static const subtitleTextColor = StringPref(
-    'subtitle_text_color',
-    defaultValue: '#FFFFFF',
-  );
-  static const subtitleBorderSize = IntPref(
-    'subtitle_border_size',
-    defaultValue: 3,
-  );
-  static const subtitleBorderColor = StringPref(
-    'subtitle_border_color',
-    defaultValue: '#000000',
-  );
-  static const subtitleBackgroundColor = StringPref(
-    'subtitle_background_color',
-    defaultValue: '#000000',
-  );
-  static const subtitleBackgroundOpacity = IntPref(
-    'subtitle_background_opacity',
-  );
+  static const subtitleFontSize = IntPref('subtitle_font_size', defaultValue: 38);
+  static const subtitleTextColor = StringPref('subtitle_text_color', defaultValue: '#FFFFFF');
+  static const subtitleBorderSize = IntPref('subtitle_border_size', defaultValue: 3);
+  static const subtitleBorderColor = StringPref('subtitle_border_color', defaultValue: '#000000');
+  static const subtitleBackgroundColor = StringPref('subtitle_background_color', defaultValue: '#000000');
+  static const subtitleBackgroundOpacity = IntPref('subtitle_background_opacity');
   static const subAssOverride = EnumPref<SubAssOverride>(
     'sub_ass_override',
     values: SubAssOverride.values,
@@ -786,10 +693,7 @@ class SettingsService extends BaseSharedPreferencesService {
 
   /// Allow MPV text subtitles to use space outside the video rectangle.
   /// Authored ASS placement remains controlled by its existing styling rules.
-  static const subtitleUseMargins = BoolPref(
-    'subtitle_use_margins',
-    defaultValue: true,
-  );
+  static const subtitleUseMargins = BoolPref('subtitle_use_margins', defaultValue: true);
 
   /// Render text subtitles (SRT/VTT/mov_text) anchored to the physical screen
   /// instead of the video rect, so they land in the letterbox bars of
@@ -801,34 +705,16 @@ class SettingsService extends BaseSharedPreferencesService {
   /// Last confirmed Supporter entitlement on this device. Runtime state owned
   /// by `SupporterService`: never exported, never reset, and only cleared on a
   /// confirmed revocation so an unreachable store cannot lock perks.
-  static const supporterEntitlementCached = BoolPref(
-    'supporter_entitlement_cached',
-  );
-  static const rememberTrackSelections = BoolPref(
-    'remember_track_selections',
-    defaultValue: true,
-  );
+  static const supporterEntitlementCached = BoolPref('supporter_entitlement_cached');
+  static const rememberTrackSelections = BoolPref('remember_track_selections', defaultValue: true);
 
   /// Episode advance follows the server's per-episode audio/subtitle
   /// selections instead of carrying the current choice over (#1717).
-  static const followServerTrackSelections = BoolPref(
-    'follow_server_track_selections',
-  );
-  static const showChapterMarkersOnTimeline = BoolPref(
-    'show_chapter_markers_on_timeline',
-    defaultValue: true,
-  );
-  static const clickVideoTogglesPlayback = BoolPref(
-    'click_video_toggles_playback',
-  );
-  static const skipIntroMode = _SkipMarkerModePref(
-    'skip_intro_mode',
-    legacyKey: _legacyAutoSkipIntroKey,
-  );
-  static const skipCreditsMode = _SkipMarkerModePref(
-    'skip_credits_mode',
-    legacyKey: _legacyAutoSkipCreditsKey,
-  );
+  static const followServerTrackSelections = BoolPref('follow_server_track_selections');
+  static const showChapterMarkersOnTimeline = BoolPref('show_chapter_markers_on_timeline', defaultValue: true);
+  static const clickVideoTogglesPlayback = BoolPref('click_video_toggles_playback');
+  static const skipIntroMode = _SkipMarkerModePref('skip_intro_mode', legacyKey: _legacyAutoSkipIntroKey);
+  static const skipCreditsMode = _SkipMarkerModePref('skip_credits_mode', legacyKey: _legacyAutoSkipCreditsKey);
 
   /// Previous format-v1 boolean representations of enum preferences, keyed by
   /// the old key. Shared by the typed migration, reset, and the portable
@@ -842,56 +728,29 @@ class SettingsService extends BaseSharedPreferencesService {
 
   static const forceSkipMarkerFallback = BoolPref('force_skip_marker_fallback');
   static const autoSkipDelay = IntPref('auto_skip_delay', defaultValue: 5);
-  static const introPattern = StringPref(
-    'intro_pattern',
-    defaultValue: defaultIntroPattern,
-  );
-  static const creditsPattern = StringPref(
-    'credits_pattern',
-    defaultValue: defaultCreditsPattern,
-  );
-  static const customDownloadPathType = NullableStringPref(
-    'custom_download_path_type',
-  );
+  static const introPattern = StringPref('intro_pattern', defaultValue: defaultIntroPattern);
+  static const creditsPattern = StringPref('credits_pattern', defaultValue: defaultCreditsPattern);
+  static const customDownloadPathType = NullableStringPref('custom_download_path_type');
   static const downloadOnWifiOnly = BoolPref('download_on_wifi_only');
-  static const autoRemoveWatchedDownloads = BoolPref(
-    'auto_remove_watched_downloads',
-  );
+  static const autoRemoveWatchedDownloads = BoolPref('auto_remove_watched_downloads');
 
   /// Set once the user has seen the pre-flight "background downloads are
   /// blocked" dialog. The persistent Downloads-screen banner covers repeat
   /// offenders, so the interrupting dialog is shown exactly once.
-  static const backgroundDownloadWarningAcknowledged = BoolPref(
-    'background_download_warning_ack',
-  );
+  static const backgroundDownloadWarningAcknowledged = BoolPref('background_download_warning_ack');
 
   /// Remembered state of the "Include Specials" toggle on the show download
   /// dialog. Defaults to true (include) so existing behavior is unchanged;
   /// turning it off persists so the next download keeps the choice.
-  static const downloadIncludeSpecials = BoolPref(
-    'download_include_specials',
-    defaultValue: true,
-  );
-  static const autoCheckUpdatesOnStartup = BoolPref(
-    'auto_check_updates_on_startup',
-    defaultValue: true,
-  );
+  static const downloadIncludeSpecials = BoolPref('download_include_specials', defaultValue: true);
+  static const autoCheckUpdatesOnStartup = BoolPref('auto_check_updates_on_startup', defaultValue: true);
   static const showPerformanceOverlay = BoolPref('show_performance_overlay');
-  static const autoHidePerformanceOverlay = BoolPref(
-    'auto_hide_performance_overlay',
-    defaultValue: true,
-  );
+  static const autoHidePerformanceOverlay = BoolPref('auto_hide_performance_overlay', defaultValue: true);
   static const enableDiscordRPC = BoolPref('enable_discord_rpc');
-  static const enableTraktWatchedSync = BoolPref(
-    'enable_trakt_watched_sync',
-    defaultValue: true,
-  );
+  static const enableTraktWatchedSync = BoolPref('enable_trakt_watched_sync', defaultValue: true);
   static const matchContentFrameRate = BoolPref('match_content_frame_rate');
   static const matchContentResolution = BoolPref('match_content_resolution');
-  static const tunneledPlayback = BoolPref(
-    'tunneled_playback',
-    defaultValue: false,
-  );
+  static const tunneledPlayback = BoolPref('tunneled_playback', defaultValue: false);
   static const dvConversionMode = EnumPref<DvConversionModePreference>(
     'dv_conversion_mode',
     values: DvConversionModePreference.values,
@@ -928,10 +787,7 @@ class SettingsService extends BaseSharedPreferencesService {
   /// users who deliberately request a server encode to sidestep a decoder
   /// limitation (#2193). Plex-only by design: MediaBrowser servers make the
   /// equivalent direct-play-vs-transcode call server-side.
-  static const directPlayCoveredQuality = BoolPref(
-    'direct_play_covered_quality',
-    defaultValue: true,
-  );
+  static const directPlayCoveredQuality = BoolPref('direct_play_covered_quality', defaultValue: true);
 
   /// Ids of the [RankedVideoCodec]s the user refused: the server transcodes
   /// them instead of sending them, and never picks them as a transcode output
@@ -952,45 +808,24 @@ class SettingsService extends BaseSharedPreferencesService {
   static const musicVolume = DoublePref('music_volume', defaultValue: 100.0);
 
   /// Restore the last music session parked-paused on launch (#2148).
-  static const resumeMusicOnLaunch = BoolPref(
-    'resume_music_on_launch',
-    defaultValue: true,
-  );
-  static const autoPlayNextEpisode = BoolPref(
-    'auto_play_next_episode',
-    defaultValue: true,
-  );
+  static const resumeMusicOnLaunch = BoolPref('resume_music_on_launch', defaultValue: true);
+  static const autoPlayNextEpisode = BoolPref('auto_play_next_episode', defaultValue: true);
 
   /// Shuffled video queues start every episode at 0:00 instead of resuming
   /// from the server-side view offset (#2303). Off preserves resume behavior.
-  static const shuffleStartsFromBeginning = BoolPref(
-    'shuffle_starts_from_beginning',
-  );
+  static const shuffleStartsFromBeginning = BoolPref('shuffle_starts_from_beginning');
 
   /// Seconds the Play Next prompt counts down before auto-advancing (#1827).
   /// 0 skips the prompt entirely and starts the next episode immediately.
   /// Only consulted while [autoPlayNextEpisode] is on.
-  static final playNextCountdown = IntPref(
-    'play_next_countdown',
-    defaultValue: 5,
-    transform: (v) => v.clamp(0, 30),
-  );
+  static final playNextCountdown = IntPref('play_next_countdown', defaultValue: 5, transform: (v) => v.clamp(0, 30));
 
   /// Touch gestures on the player surface (#1810). Each defaults on; the
   /// edge swipes gate [MobileEdgeAdjustmentTracker] tracking and the zoom
   /// pref gates the pinch recognizer in the player screen.
-  static const gestureBrightnessSwipe = BoolPref(
-    'gesture_brightness_swipe',
-    defaultValue: true,
-  );
-  static const gestureVolumeSwipe = BoolPref(
-    'gesture_volume_swipe',
-    defaultValue: true,
-  );
-  static const gesturePinchToZoom = BoolPref(
-    'gesture_pinch_to_zoom',
-    defaultValue: true,
-  );
+  static const gestureBrightnessSwipe = BoolPref('gesture_brightness_swipe', defaultValue: true);
+  static const gestureVolumeSwipe = BoolPref('gesture_volume_swipe', defaultValue: true);
+  static const gesturePinchToZoom = BoolPref('gesture_pinch_to_zoom', defaultValue: true);
 
   /// Remember the brightness level set by the swipe gesture (#2178). When on,
   /// playback starts at [rememberedBrightnessLevel] instead of the system
@@ -1000,10 +835,7 @@ class SettingsService extends BaseSharedPreferencesService {
   /// Last brightness the swipe gesture settled on while
   /// [rememberBrightnessLevel] was enabled. Negative means "never set";
   /// device-local runtime state, so reset-only in the registry.
-  static const rememberedBrightnessLevel = DoublePref(
-    'remembered_brightness_level',
-    defaultValue: -1.0,
-  );
+  static const rememberedBrightnessLevel = DoublePref('remembered_brightness_level', defaultValue: -1.0);
 
   /// Replaced the `deinterlace` toggle: on → [DeinterlaceMode.video].
   static const deinterlaceMode = LegacyBoolEnumPref<DeinterlaceMode>(
@@ -1048,48 +880,23 @@ class SettingsService extends BaseSharedPreferencesService {
   /// Whether the Explore tab (Plex Discover / tracker catalog rows) is shown
   /// at all. UI-only: catalog sources stay connected so watchlist surfaces
   /// keep working while the tab is hidden.
-  static const showExploreTab = BoolPref(
-    'show_explore_tab',
-    defaultValue: true,
-  );
+  static const showExploreTab = BoolPref('show_explore_tab', defaultValue: true);
   static const alwaysKeepSidebarOpen = BoolPref('always_keep_sidebar_open');
 
   /// Sidebar Libraries section expansion. Persisted so a collapsed section
   /// stays collapsed across launches instead of springing back open (#1896).
-  static const librariesSectionExpanded = BoolPref(
-    'libraries_section_expanded',
-    defaultValue: true,
-  );
-  static const showUnwatchedCount = BoolPref(
-    'show_unwatched_count',
-    defaultValue: true,
-  );
+  static const librariesSectionExpanded = BoolPref('libraries_section_expanded', defaultValue: true);
+  static const showUnwatchedCount = BoolPref('show_unwatched_count', defaultValue: true);
 
   /// The corner checkmark on watched posters/thumbnails (#1998). Progress bars
   /// and unwatched counts are unaffected.
-  static const showWatchedIndicators = BoolPref(
-    'show_watched_indicators',
-    defaultValue: true,
-  );
-  static const showEpisodeNumberOnCards = BoolPref(
-    'show_episode_number_on_cards',
-    defaultValue: true,
-  );
-  static const showSeasonPostersOnTabs = BoolPref(
-    'show_season_posters_on_tabs',
-  );
+  static const showWatchedIndicators = BoolPref('show_watched_indicators', defaultValue: true);
+  static const showEpisodeNumberOnCards = BoolPref('show_episode_number_on_cards', defaultValue: true);
+  static const showSeasonPostersOnTabs = BoolPref('show_season_posters_on_tabs');
   static const hideSpoilers = BoolPref('hide_spoilers');
-  static const showNavBarLabels = BoolPref(
-    'show_nav_bar_labels',
-    defaultValue: true,
-  );
-  static const globalShaderPreset = StringPref(
-    'global_shader_preset',
-    defaultValue: 'none',
-  );
-  static const requireProfileSelectionOnOpen = BoolPref(
-    'require_profile_selection_on_open',
-  );
+  static const showNavBarLabels = BoolPref('show_nav_bar_labels', defaultValue: true);
+  static const globalShaderPreset = StringPref('global_shader_preset', defaultValue: 'none');
+  static const requireProfileSelectionOnOpen = BoolPref('require_profile_selection_on_open');
   static const useExternalPlayer = _UseExternalPlayerPref();
   static const forceTvMode = BoolPref('force_tv_mode');
   static const visualEffects = EnumPref<VisualEffectsSetting>(
@@ -1110,19 +917,13 @@ class SettingsService extends BaseSharedPreferencesService {
     legacyTrue: AudioChannelLimit.stereo,
     legacyFalse: AudioChannelLimit.original,
   );
-  static const audioDownmixNormalize = BoolPref(
-    'audio_downmix_normalize',
-    defaultValue: true,
-  );
+  static const audioDownmixNormalize = BoolPref('audio_downmix_normalize', defaultValue: true);
 
   /// mpv `audio-device` name last picked in the player's Audio Output menu;
   /// `auto` leaves the choice to mpv. Applied to each new mpv core only while
   /// that core lists the device (see `applyPreferredAudioDevice`). Names are
   /// per machine, so reset-only in the registry.
-  static const audioOutputDevice = StringPref(
-    'audio_output_device',
-    defaultValue: 'auto',
-  );
+  static const audioOutputDevice = StringPref('audio_output_device', defaultValue: 'auto');
   static const liveTvDefaultFavorites = BoolPref('live_tv_default_favorites');
   static const matchRefreshRate = BoolPref('match_refresh_rate');
   static const matchDynamicRange = BoolPref('match_dynamic_range');
@@ -1132,27 +933,20 @@ class SettingsService extends BaseSharedPreferencesService {
 
   /// A self-hosted Open Watch Party relay's base URL; null for the public
   /// relays.
-  static final watchPartyRelayUrl = NullableStringPref(
-    'watch_party_relay_url',
-    transform: _normalizeRelayBaseUrl,
-  );
+  static final watchPartyRelayUrl = NullableStringPref('watch_party_relay_url', transform: _normalizeRelayBaseUrl);
 
   static NullableStringPref recentRoomsForProfile(String profileId) {
     if (profileId.trim().isEmpty) {
       throw ArgumentError.value(profileId, 'profileId', 'Must not be empty');
     }
-    return NullableStringPref(
-      profileScopedPrefsKey(profileId, 'watch_together_recent_rooms'),
-    );
+    return NullableStringPref(profileScopedPrefsKey(profileId, 'watch_together_recent_rooms'));
   }
 
   static NullableStringPref recentMetadataTagsForProfile(String profileId) {
     if (profileId.trim().isEmpty) {
       throw ArgumentError.value(profileId, 'profileId', 'Must not be empty');
     }
-    return NullableStringPref(
-      profileScopedPrefsKey(profileId, 'metadata_recent_tags'),
-    );
+    return NullableStringPref(profileScopedPrefsKey(profileId, 'metadata_recent_tags'));
   }
 
   static final companionRemoteLastHostAddress = NullableStringPref(
@@ -1160,31 +954,17 @@ class SettingsService extends BaseSharedPreferencesService {
     transform: _trimEmptyAsNull,
   );
 
-  static final maxVolume = IntPref(
-    'max_volume',
-    defaultValue: 100,
-    transform: (v) => v.clamp(100, 300),
-  );
-  static final downmixCenterBoost = IntPref(
-    'downmix_center_boost',
-    transform: (v) => v.clamp(0, 12),
-  );
+  static final maxVolume = IntPref('max_volume', defaultValue: 100, transform: (v) => v.clamp(100, 300));
+  static final downmixCenterBoost = IntPref('downmix_center_boost', transform: (v) => v.clamp(0, 12));
   // mpv's sub-pos range: values above 100 move subtitles further down than
   // their default bottom margin (#2331). ExoPlayer still caps at 100.
-  static final subtitlePosition = IntPref(
-    'subtitle_position',
-    defaultValue: 100,
-    transform: (v) => v.clamp(0, 150),
-  );
+  static final subtitlePosition = IntPref('subtitle_position', defaultValue: 100, transform: (v) => v.clamp(0, 150));
   static final defaultPlaybackSpeed = DoublePref(
     'default_playback_speed',
     defaultValue: 1.0,
     transform: (v) => v.clamp(minimumPlaybackRate, maximumPlaybackRate),
   );
-  static final defaultBoxFitMode = IntPref(
-    'default_box_fit_mode',
-    transform: (v) => v.clamp(0, 2),
-  );
+  static final defaultBoxFitMode = IntPref('default_box_fit_mode', transform: (v) => v.clamp(0, 2));
 
   /// Custom zoom layered on the fit mode; 1.0 is no zoom.
   static final defaultVideoZoom = DoublePref(
@@ -1197,35 +977,20 @@ class SettingsService extends BaseSharedPreferencesService {
   // [PlayerSettingScope]). Defaults preserve the pre-existing behavior:
   // every change updates the global default, except zoom, which was
   // session-only before it could be scoped.
-  static final playbackSpeedScope = PlayerSettingScopePref(
-    'playback_speed_scope',
-    [defaultPlaybackSpeed],
-  );
-  static final shaderPresetScope = PlayerSettingScopePref(
-    'shader_preset_scope',
-    [globalShaderPreset],
-  );
-  static final boxFitScope = PlayerSettingScopePref('box_fit_scope', [
-    defaultBoxFitMode,
-  ]);
+  static final playbackSpeedScope = PlayerSettingScopePref('playback_speed_scope', [defaultPlaybackSpeed]);
+  static final shaderPresetScope = PlayerSettingScopePref('shader_preset_scope', [globalShaderPreset]);
+  static final boxFitScope = PlayerSettingScopePref('box_fit_scope', [defaultBoxFitMode]);
   static final videoZoomScope = PlayerSettingScopePref('video_zoom_scope', [
     defaultVideoZoom,
   ], defaultValue: PlayerSettingScope.off);
 
   /// One scope for both sync offsets: they are tuned together and a user who
   /// wants per-title subtitle offsets wants per-title audio offsets too.
-  static final syncOffsetScope = PlayerSettingScopePref('sync_offset_scope', [
-    audioSyncOffset,
-    subtitleSyncOffset,
-  ]);
-  static final displaySwitchDelay = IntPref(
-    'display_switch_delay',
-    transform: (v) => v.clamp(0, 10),
-  );
+  static final syncOffsetScope = PlayerSettingScopePref('sync_offset_scope', [audioSyncOffset, subtitleSyncOffset]);
+  static final displaySwitchDelay = IntPref('display_switch_delay', transform: (v) => v.clamp(0, 10));
 
-  static ThemeMode _tvAwareThemeModeDefault() => Platform.isWindows
-      ? ThemeMode.dark
-      : (PlatformDetector.isTV() ? ThemeMode.oled : ThemeMode.system);
+  static ThemeMode _tvAwareThemeModeDefault() =>
+      Platform.isWindows ? ThemeMode.dark : (PlatformDetector.isTV() ? ThemeMode.oled : ThemeMode.system);
   static const themeMode = EnumPref<ThemeMode>(
     'theme_mode',
     values: ThemeMode.values,
@@ -1250,9 +1015,7 @@ class SettingsService extends BaseSharedPreferencesService {
     defaultValueProvider: PlatformDetector.isDesktopOS,
   );
   static const startInFullscreen = BoolPref('start_in_fullscreen');
-  static const exitFullscreenOnPlayerClose = BoolPref(
-    'exit_fullscreen_on_player_close',
-  );
+  static const exitFullscreenOnPlayerClose = BoolPref('exit_fullscreen_on_player_close');
 
   static const playbackBufferTier = EnumPref<PlaybackBufferTier>(
     'playback_buffer_tier',
@@ -1261,18 +1024,14 @@ class SettingsService extends BaseSharedPreferencesService {
   );
   static const libraryDensity = _LibraryDensityPref();
   static GridSpacing _tvAwareGridSpacingDefault() =>
-      Platform.isWindows || PlatformDetector.isTV()
-      ? GridSpacing.normal
-      : GridSpacing.tight;
+      Platform.isWindows || PlatformDetector.isTV() ? GridSpacing.normal : GridSpacing.tight;
   static const gridSpacing = EnumPref<GridSpacing>(
     'grid_spacing',
     values: GridSpacing.values,
     defaultValueProvider: _tvAwareGridSpacingDefault,
   );
   static const automotiveUiScale = _AutomotiveUiScalePref();
-  static const tvCornerSpotlightBackdrop = BoolPref(
-    'tv_corner_spotlight_backdrop',
-  );
+  static const tvCornerSpotlightBackdrop = BoolPref('tv_corner_spotlight_backdrop');
   static const episodePosterMode = _EpisodePosterModePref();
   static const continueWatchingAction = EnumPref<ContinueWatchingAction>(
     'continue_watching_action',
@@ -1290,26 +1049,17 @@ class SettingsService extends BaseSharedPreferencesService {
     'keyboard_hotkeys',
     defaultValue: <String, HotKey?>{..._defaultKeyboardHotkeys()},
     encode: (values) => json.encode(
-      values.map(
-        (key, hotkey) => MapEntry(
-          key,
-          hotkey == null ? const {'disabled': true} : serializeHotKey(hotkey),
-        ),
-      ),
+      values.map((key, hotkey) => MapEntry(key, hotkey == null ? const {'disabled': true} : serializeHotKey(hotkey))),
     ),
     decode: _decodeKeyboardHotkeys,
   );
-  static final mediaVersionPreferences =
-      JsonPref<Map<String, MediaVersionPreference>>(
-        'media_version_preferences',
-        defaultValue: const {},
-        encode: (v) =>
-            json.encode(v.map((k, pref) => MapEntry(k, pref.toJson()))),
-        // Legacy values were bare ints; MediaVersionPreference.fromJson accepts both.
-        decode: (raw) => (raw as Map<String, dynamic>).map(
-          (k, v) => MapEntry(k, MediaVersionPreference.fromJson(v)),
-        ),
-      );
+  static final mediaVersionPreferences = JsonPref<Map<String, MediaVersionPreference>>(
+    'media_version_preferences',
+    defaultValue: const {},
+    encode: (v) => json.encode(v.map((k, pref) => MapEntry(k, pref.toJson()))),
+    // Legacy values were bare ints; MediaVersionPreference.fromJson accepts both.
+    decode: (raw) => (raw as Map<String, dynamic>).map((k, v) => MapEntry(k, MediaVersionPreference.fromJson(v))),
+  );
 
   /// Library-/title-scoped values for the player-sheet settings, managed by
   /// [ScopedPlayerPrefs]: property id → scope key → `{'v': value, 't': ms}`.
@@ -1327,8 +1077,7 @@ class SettingsService extends BaseSharedPreferencesService {
     'local_last_played_at',
     defaultValue: const {},
     encode: json.encode,
-    decode: (raw) =>
-        (raw as Map<String, dynamic>).map((k, v) => MapEntry(k, v as int)),
+    decode: (raw) => (raw as Map<String, dynamic>).map((k, v) => MapEntry(k, v as int)),
   );
   static final customShaderPresets = JsonPref<List<Map<String, dynamic>>>(
     'custom_shader_presets',
@@ -1346,9 +1095,7 @@ class SettingsService extends BaseSharedPreferencesService {
     'custom_external_players',
     defaultValue: const [],
     encode: (v) => json.encode(v.map((p) => p.toJson()).toList()),
-    decode: (raw) => (raw as List)
-        .map((e) => ExternalPlayer.fromJson(e as Map<String, dynamic>))
-        .toList(),
+    decode: (raw) => (raw as List).map((e) => ExternalPlayer.fromJson(e as Map<String, dynamic>)).toList(),
   );
   static final mpvPresets = JsonPref<List<MpvPreset>>(
     'mpv_config_presets',
@@ -1357,25 +1104,20 @@ class SettingsService extends BaseSharedPreferencesService {
     decode: _decodeMpvPresets,
   );
 
-  static IntPref watchedThresholdPref(ServerId serverId) =>
-      IntPref('watched_threshold_$serverId', defaultValue: 90);
+  static IntPref watchedThresholdPref(ServerId serverId) => IntPref('watched_threshold_$serverId', defaultValue: 90);
 
   /// Library section the user last picked as a DVR recording target, keyed by
   /// subscription type (movie/show) so the two don't clobber each other.
   /// 0 = unset (only explicit picks are written; the server template default
   /// keeps applying until the user chooses).
-  static IntPref dvrTargetSectionPref(ServerId serverId, int type) =>
-      IntPref('dvr_target_section_${type}_$serverId');
+  static IntPref dvrTargetSectionPref(ServerId serverId, int type) => IntPref('dvr_target_section_${type}_$serverId');
 
   /// Per-service "scrobble to this tracker" toggle. Trakt's second toggle
   /// ([enableTraktWatchedSync]) has no counterpart on the other services and
   /// stays a standalone constant.
-  static BoolPref scrobblePref(TrackerService s) =>
-      BoolPref('enable_${s.name}_scrobble', defaultValue: true);
+  static BoolPref scrobblePref(TrackerService s) => BoolPref('enable_${s.name}_scrobble', defaultValue: true);
 
-  static EnumPref<TrackerLibraryFilterMode> trackerFilterModePref(
-    TrackerService s,
-  ) => EnumPref(
+  static EnumPref<TrackerLibraryFilterMode> trackerFilterModePref(TrackerService s) => EnumPref(
     'tracker_library_filter_mode_${s.name}',
     values: TrackerLibraryFilterMode.values,
     defaultValue: TrackerLibraryFilterMode.blacklist,
@@ -1388,8 +1130,9 @@ class SettingsService extends BaseSharedPreferencesService {
   /// so every builder at a call site shares one fan-out for the process
   /// lifetime. Dynamic lists receive weak entries: they get the same behavior
   /// as `Listenable.merge` without accumulating in a process-lifetime map.
-  final Expando<_PreferenceGroupListenable> _preferenceGroupListenables =
-      Expando<_PreferenceGroupListenable>('settings preference groups');
+  final Expando<_PreferenceGroupListenable> _preferenceGroupListenables = Expando<_PreferenceGroupListenable>(
+    'settings preference groups',
+  );
 
   Listenable listenableOfAll(List<Pref<Object?>> prefs) {
     return _preferenceGroupListenables[prefs] ??= _PreferenceGroupListenable(
@@ -1402,9 +1145,7 @@ class SettingsService extends BaseSharedPreferencesService {
   static SettingsService? _cachedInstance;
 
   static Future<SettingsService> getInstance() async {
-    _cachedInstance ??= await BaseSharedPreferencesService.initializeInstance(
-      () => SettingsService._(),
-    );
+    _cachedInstance ??= await BaseSharedPreferencesService.initializeInstance(() => SettingsService._());
     return _cachedInstance!;
   }
 
@@ -1415,9 +1156,7 @@ class SettingsService extends BaseSharedPreferencesService {
   static SettingsService get instance {
     final instance = _cachedInstance;
     if (instance == null) {
-      throw StateError(
-        'SettingsService has not been initialized. Call SettingsService.getInstance() first.',
-      );
+      throw StateError('SettingsService has not been initialized. Call SettingsService.getInstance() first.');
     }
     return instance;
   }
@@ -1460,12 +1199,7 @@ class SettingsService extends BaseSharedPreferencesService {
   /// without a library or title identity) from being wiped on every launch.
   Future<void> _resetGlobalsOfKeyedPlayerScopes() async {
     if (prefs.containsKey(_playerScopeGlobalsResetKey)) return;
-    for (final scope in [
-      playbackSpeedScope,
-      shaderPresetScope,
-      boxFitScope,
-      syncOffsetScope,
-    ]) {
+    for (final scope in [playbackSpeedScope, shaderPresetScope, boxFitScope, syncOffsetScope]) {
       if (read(scope).keysEntries) await scope.resetGlobals(this);
     }
     await prefs.setBool(_playerScopeGlobalsResetKey, true);
@@ -1488,14 +1222,10 @@ class SettingsService extends BaseSharedPreferencesService {
     }
   }
 
-  static Map<String, HotKey> defaultKeyboardHotkeys() =>
-      _defaultKeyboardHotkeys();
+  static Map<String, HotKey> defaultKeyboardHotkeys() => _defaultKeyboardHotkeys();
 
   /// Unknown libraries are allowed only when no filter is configured.
-  bool isLibraryAllowedForTracker(
-    TrackerService service,
-    String? libraryGlobalKey,
-  ) {
+  bool isLibraryAllowedForTracker(TrackerService service, String? libraryGlobalKey) {
     final filterIds = read(trackerFilterIdsPref(service));
     final mode = read(trackerFilterModePref(service));
     if (libraryGlobalKey == null) {
@@ -1505,8 +1235,7 @@ class SettingsService extends BaseSharedPreferencesService {
     return mode == TrackerLibraryFilterMode.blacklist ? !inList : inList;
   }
 
-  static bool validCustomPlayerFields(String name, String value) =>
-      name.trim().isNotEmpty && value.trim().isNotEmpty;
+  static bool validCustomPlayerFields(String name, String value) => name.trim().isNotEmpty && value.trim().isNotEmpty;
 
   static void validateCustomExternalPlayers(List<ExternalPlayer> players) {
     final ids = <String>{};
@@ -1551,8 +1280,7 @@ class SettingsService extends BaseSharedPreferencesService {
     void Function()? checkCurrent,
     bool resetOverride = false,
   }) async {
-    if (player.isCustom &&
-        !read(customExternalPlayers).any((p) => p.id == player.id)) {
+    if (player.isCustom && !read(customExternalPlayers).any((p) => p.id == player.id)) {
       throw const FormatException('Unknown custom player');
     }
     checkCurrent?.call();
@@ -1564,9 +1292,7 @@ class SettingsService extends BaseSharedPreferencesService {
   }
 
   Future<void> removeCustomExternalPlayer(String id) =>
-      replaceCustomExternalPlayers(
-        read(customExternalPlayers).where((p) => p.id != id).toList(),
-      );
+      replaceCustomExternalPlayers(read(customExternalPlayers).where((p) => p.id != id).toList());
 
   /// Parse raw config text into a `Map<String, String>` (skip blanks and # comments).
   ///
@@ -1584,9 +1310,7 @@ class SettingsService extends BaseSharedPreferencesService {
       if (eqIndex <= 0) continue;
       final k = trimmed.substring(0, eqIndex).trim();
       var v = trimmed.substring(eqIndex + 1).trim();
-      if (v.length >= 2 &&
-          (v[0] == "'" || v[0] == '"') &&
-          v[v.length - 1] == v[0]) {
+      if (v.length >= 2 && (v[0] == "'" || v[0] == '"') && v[v.length - 1] == v[0]) {
         v = v.substring(1, v.length - 1);
       }
       if (k.isNotEmpty) result[k] = v;
@@ -1596,8 +1320,7 @@ class SettingsService extends BaseSharedPreferencesService {
 
   /// Save a new preset (overwrites existing with same name).
   Future<void> saveMpvPreset(String name, String text) async {
-    if (name.trim().isEmpty)
-      throw const FormatException('A preset name is required');
+    if (name.trim().isEmpty) throw const FormatException('A preset name is required');
     final presets = read(mpvPresets).where((p) => p.name != name).toList();
     presets.add(MpvPreset(name: name, text: text, createdAt: DateTime.now()));
     await write(mpvPresets, presets);
@@ -1608,26 +1331,16 @@ class SettingsService extends BaseSharedPreferencesService {
     await write(mpvPresets, presets);
   }
 
-  Future<void> replaceMpvPresets(
-    List<({String name, String text})> values, {
-    void Function()? checkCurrent,
-  }) async {
+  Future<void> replaceMpvPresets(List<({String name, String text})> values, {void Function()? checkCurrent}) async {
     final names = <String>{};
     for (final value in values) {
-      if (value.name.trim().isEmpty || !names.add(value.name))
-        throw const FormatException('Invalid preset name');
+      if (value.name.trim().isEmpty || !names.add(value.name)) throw const FormatException('Invalid preset name');
     }
-    final previous = {
-      for (final preset in read(mpvPresets)) preset.name: preset,
-    };
+    final previous = {for (final preset in read(mpvPresets)) preset.name: preset};
     final now = DateTime.now();
     final presets = [
       for (final value in values)
-        MpvPreset(
-          name: value.name,
-          text: value.text,
-          createdAt: previous[value.name]?.createdAt ?? now,
-        ),
+        MpvPreset(name: value.name, text: value.text, createdAt: previous[value.name]?.createdAt ?? now),
     ];
     checkCurrent?.call();
     await write(mpvPresets, presets, checkCurrent: checkCurrent);
@@ -1645,10 +1358,7 @@ class SettingsService extends BaseSharedPreferencesService {
   static Map<String, dynamic> serializeHotKey(HotKey hotKey) {
     // Use USB HID code for reliable serialization across debug/release modes.
     final usbHidCode = hotKey.key.usbHidUsage.toRadixString(16).padLeft(8, '0');
-    return {
-      'key': usbHidCode,
-      'modifiers': hotKey.modifiers?.map((m) => m.name).toList() ?? [],
-    };
+    return {'key': usbHidCode, 'modifiers': hotKey.modifiers?.map((m) => m.name).toList() ?? []};
   }
 
   static HotKey? deserializeHotKey(Map<String, dynamic> data) {
@@ -1662,14 +1372,9 @@ class SettingsService extends BaseSharedPreferencesService {
           .toList();
       // Try parsing as USB HID code first (new format), fall back to string parsing.
       final usbHidCode = int.tryParse(keyString, radix: 16);
-      final key = usbHidCode != null
-          ? PhysicalKeyboardKey(usbHidCode)
-          : _findKeyByString(keyString);
+      final key = usbHidCode != null ? PhysicalKeyboardKey(usbHidCode) : _findKeyByString(keyString);
       if (key != null) {
-        return HotKey(
-          key: key,
-          modifiers: modifiers.isNotEmpty ? modifiers : null,
-        );
+        return HotKey(key: key, modifiers: modifiers.isNotEmpty ? modifiers : null);
       }
     } catch (_) {
       // Ignore deserialization errors.
@@ -1760,8 +1465,7 @@ class SettingsService extends BaseSharedPreferencesService {
 
     // Try extracting USB HID code from toString() output:
     // PhysicalKeyboardKey#ec9ed(usbHidUsage: "0x0007002c", debugName: "Space")
-    final usbHidMatch = RegExp(r'usbhidusage: "0x([0-9a-f]+)"')
-        .firstMatch(normalized);
+    final usbHidMatch = RegExp(r'usbhidusage: "0x([0-9a-f]+)"').firstMatch(normalized);
     if (usbHidMatch != null) {
       final code = int.tryParse(usbHidMatch.group(1)!, radix: 16);
       if (code != null) return PhysicalKeyboardKey(code);
@@ -1891,10 +1595,7 @@ class SettingsService extends BaseSharedPreferencesService {
     episodeAction,
     keyboardHotkeys,
     // Library filters, one pair per tracker service.
-    for (final s in TrackerService.values) ...[
-      trackerFilterModePref(s),
-      trackerFilterIdsPref(s),
-    ],
+    for (final s in TrackerService.values) ...[trackerFilterModePref(s), trackerFilterIdsPref(s)],
   ];
 
   /// Group two: exported but *not* reset. Mirrors the original reset surface —
@@ -1954,16 +1655,10 @@ class SettingsService extends BaseSharedPreferencesService {
   ];
 
   /// Settings that "Reset All Settings" actually resets.
-  static List<Pref<Object?>> get _resettablePrefs => [
-    ..._resetAndPortablePrefs,
-    ..._resetOnlyPrefs,
-  ];
+  static List<Pref<Object?>> get _resettablePrefs => [..._resetAndPortablePrefs, ..._resetOnlyPrefs];
 
   /// Settings carried by settings export/import files.
-  static List<Pref<Object?>> get portablePrefs => [
-    ..._resetAndPortablePrefs,
-    ..._portableOnlyPrefs,
-  ];
+  static List<Pref<Object?>> get portablePrefs => [..._resetAndPortablePrefs, ..._portableOnlyPrefs];
 
   /// Public local settings inventory. Export/reset policy remains independent.
   /// Compound resources are exposed through their owning domain APIs instead.
@@ -2015,31 +1710,19 @@ class SettingsService extends BaseSharedPreferencesService {
 
   static void validateEditableValue(Pref<Object?> pref, Object? value) {
     final bounds = numericBounds(pref);
-    if (value is num &&
-        (!value.isFinite ||
-            (bounds != null && (value < bounds.$1 || value > bounds.$2)))) {
+    if (value is num && (!value.isFinite || (bounds != null && (value < bounds.$1 || value > bounds.$2)))) {
       throw const FormatException('Value is outside the supported range');
     }
-    if ((pref == introPattern || pref == creditsPattern) &&
-        !isValidSkipPattern(value as String)) {
-      throw const FormatException(
-        'Expected a nonempty valid regular expression',
-      );
+    if ((pref == introPattern || pref == creditsPattern) && !isValidSkipPattern(value as String)) {
+      throw const FormatException('Expected a nonempty valid regular expression');
     }
-    if (pref == subtitleSearchLanguage &&
-        value != null &&
-        LanguageCodes.getIso6391Code(value as String) == null) {
+    if (pref == subtitleSearchLanguage && value != null && LanguageCodes.getIso6391Code(value as String) == null) {
       throw const FormatException('Expected an ISO 639 language code');
     }
-    if (pref == rememberedBrightnessLevel &&
-        value is num &&
-        value < 0 &&
-        value != -1) {
+    if (pref == rememberedBrightnessLevel && value is num && value < 0 && value != -1) {
       throw const FormatException('Brightness must be -1 (unset) or in 0..1');
     }
-    if (pref == subtitleTextColor ||
-        pref == subtitleBorderColor ||
-        pref == subtitleBackgroundColor) {
+    if (pref == subtitleTextColor || pref == subtitleBorderColor || pref == subtitleBackgroundColor) {
       if (value is! String || !RegExp(r'^#[0-9a-fA-F]{6}$').hasMatch(value)) {
         throw const FormatException('Expected a six-digit hex color');
       }
@@ -2049,8 +1732,7 @@ class SettingsService extends BaseSharedPreferencesService {
     }
     if (pref is StringListPref) {
       final values = value as List<String>;
-      if (values.any((v) => v.trim().isEmpty) ||
-          values.toSet().length != values.length) {
+      if (values.any((v) => v.trim().isEmpty) || values.toSet().length != values.length) {
         throw const FormatException('Expected unique nonempty identifiers');
       }
     }
@@ -2065,8 +1747,7 @@ class SettingsService extends BaseSharedPreferencesService {
       final pref = entry.value;
       if (!resettable.contains(pref) && !prefs.containsKey(pref.key)) {
         final legacyValue = readNullableBool(entry.key);
-        if (legacyValue != null)
-          await pref.writeTo(this, pref.fromLegacy(legacyValue));
+        if (legacyValue != null) await pref.writeTo(this, pref.fromLegacy(legacyValue));
       }
       await prefs.remove(entry.key);
     }

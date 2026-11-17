@@ -45,16 +45,12 @@ class ProfileSwitchScreen extends StatefulWidget {
   State<ProfileSwitchScreen> createState() => _ProfileSwitchScreenState();
 }
 
-class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
-    with MountedSetStateMixin {
+class _ProfileSwitchScreenState extends State<ProfileSwitchScreen> with MountedSetStateMixin {
   bool _allowPop = false;
-  final FocusNode _addProfileFocusNode = FocusNode(
-    debugLabel: 'AddLocalProfile',
-  );
+  final FocusNode _addProfileFocusNode = FocusNode(debugLabel: 'AddLocalProfile');
   final Map<String, FocusNode> _profileFocusNodes = {};
   final Map<String, FocusNode> _profileMenuFocusNodes = {};
-  final Map<String, GlobalKey<AppMenuButtonState<_TileAction>>>
-  _profileMenuKeys = {};
+  final Map<String, GlobalKey<AppMenuButtonState<_TileAction>>> _profileMenuKeys = {};
   bool _switching = false;
 
   @override
@@ -94,9 +90,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
             FocusedScrollScaffold(
               title: Text(t.screens.switchProfile),
               automaticallyImplyLeading: !widget.requireSelection,
-              onBackPressed: widget.requireSelection
-                  ? () => unawaited(AppExitService.requestExit())
-                  : null,
+              onBackPressed: widget.requireSelection ? () => unawaited(AppExitService.requestExit()) : null,
               slivers: [
                 if (profiles.isEmpty)
                   SliverFillRemaining(
@@ -121,10 +115,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
                       onSelect: _switching ? null : _addLocalProfile,
                       child: OutlinedButton.icon(
                         onPressed: _switching ? null : _addLocalProfile,
-                        icon: const AppIcon(
-                          Symbols.person_add_rounded,
-                          fill: 1,
-                        ),
+                        icon: const AppIcon(Symbols.person_add_rounded, fill: 1),
                         label: Text(t.profiles.addPlezyProfile),
                       ),
                     ),
@@ -143,11 +134,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
   /// Desktop profile chooser: a black canvas and horizontal cards matching
   /// Plex Web's Select User screen. Selection still goes through Plezy's
   /// existing PIN validation and profile-binding flow.
-  Widget _buildPlexWebProfilePicker(
-    ActiveProfileProvider activeProvider,
-    List<Profile> profiles,
-    bool loading,
-  ) {
+  Widget _buildPlexWebProfilePicker(ActiveProfileProvider activeProvider, List<Profile> profiles, bool loading) {
     if (loading) {
       return const ColoredBox(
         color: Colors.black,
@@ -162,21 +149,13 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
           padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 72),
           child: Center(
             child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: viewport.maxHeight > 144
-                    ? viewport.maxHeight - 144
-                    : 0.0,
-              ),
+              constraints: BoxConstraints(minHeight: viewport.maxHeight > 144 ? viewport.maxHeight - 144 : 0.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     'Select User',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.w400,
-                    ),
+                    style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w400),
                   ),
                   const SizedBox(height: 54),
                   SingleChildScrollView(
@@ -201,10 +180,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
     );
   }
 
-  Widget _buildPlexWebProfileCard(
-    ActiveProfileProvider activeProvider,
-    Profile profile,
-  ) {
+  Widget _buildPlexWebProfileCard(ActiveProfileProvider activeProvider, Profile profile) {
     final isActive = profile.id == activeProvider.activeId;
     final focusNode = _profileFocusNode(profile);
     final onSelect = _switching ? null : () => _switchTo(profile);
@@ -218,18 +194,14 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
         useBackgroundFocus: true,
         borderRadius: 4,
         onSelect: onSelect,
-        onLongPress: widget.requireSelection
-            ? null
-            : () => _manageProfile(profile),
+        onLongPress: widget.requireSelection ? null : () => _manageProfile(profile),
         child: Material(
           color: const Color(0xFF242424),
           borderRadius: BorderRadius.circular(4),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: onSelect,
-            onLongPress: widget.requireSelection
-                ? null
-                : () => _manageProfile(profile),
+            onLongPress: widget.requireSelection ? null : () => _manageProfile(profile),
             child: Column(
               children: [
                 Expanded(
@@ -241,10 +213,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
                           padding: const EdgeInsets.all(5),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: const Color(0xFF555555),
-                              width: 5,
-                            ),
+                            border: Border.all(color: const Color(0xFF555555), width: 5),
                           ),
                           child: ProfileAvatar(
                             profile: profile,
@@ -256,11 +225,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
                           const Positioned(
                             right: -3,
                             bottom: -3,
-                            child: AppIcon(
-                              Symbols.workspace_premium_rounded,
-                              color: Color(0xFFE5A00D),
-                              size: 24,
-                            ),
+                            child: AppIcon(Symbols.workspace_premium_rounded, color: Color(0xFFE5A00D), size: 24),
                           ),
                       ],
                     ),
@@ -270,10 +235,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
                   width: double.infinity,
                   height: 75,
                   color: const Color(0xFF171717),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 7,
-                    vertical: 8,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 8),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -281,19 +243,11 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
                         profile.displayName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: isActive
-                              ? const Color(0xFFE5A00D)
-                              : Colors.white70,
-                          fontSize: 19,
-                        ),
+                        style: TextStyle(color: isActive ? const Color(0xFFE5A00D) : Colors.white70, fontSize: 19),
                       ),
                       if (profile.isPlexHome) ...[
                         const SizedBox(height: 4),
-                        const Text(
-                          'Managed Account',
-                          style: TextStyle(color: Colors.white54, fontSize: 14),
-                        ),
+                        const Text('Managed Account', style: TextStyle(color: Colors.white54, fontSize: 14)),
                       ],
                     ],
                   ),
@@ -330,11 +284,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
                     child: CircleAvatar(
                       radius: 62,
                       backgroundColor: Color(0xFF424242),
-                      child: AppIcon(
-                        Symbols.add_rounded,
-                        size: 78,
-                        color: Color(0xFFE5A00D),
-                      ),
+                      child: AppIcon(Symbols.add_rounded, size: 78, color: Color(0xFFE5A00D)),
                     ),
                   ),
                 ),
@@ -342,10 +292,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
                   color: const Color(0xFF171717),
                   height: 75,
                   alignment: Alignment.center,
-                  child: const Text(
-                    'Add User...',
-                    style: TextStyle(color: Colors.white70, fontSize: 19),
-                  ),
+                  child: const Text('Add User...', style: TextStyle(color: Colors.white70, fontSize: 19)),
                 ),
               ],
             ),
@@ -356,24 +303,15 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
   }
 
   FocusNode _profileFocusNode(Profile profile) {
-    return _profileFocusNodes.putIfAbsent(
-      profile.id,
-      () => FocusNode(debugLabel: 'ProfileTile:${profile.id}'),
-    );
+    return _profileFocusNodes.putIfAbsent(profile.id, () => FocusNode(debugLabel: 'ProfileTile:${profile.id}'));
   }
 
   FocusNode _profileMenuFocusNode(Profile profile) {
-    return _profileMenuFocusNodes.putIfAbsent(
-      profile.id,
-      () => FocusNode(debugLabel: 'ProfileActions:${profile.id}'),
-    );
+    return _profileMenuFocusNodes.putIfAbsent(profile.id, () => FocusNode(debugLabel: 'ProfileActions:${profile.id}'));
   }
 
   GlobalKey<AppMenuButtonState<_TileAction>> _profileMenuKey(Profile profile) {
-    return _profileMenuKeys.putIfAbsent(
-      profile.id,
-      () => GlobalKey<AppMenuButtonState<_TileAction>>(),
-    );
+    return _profileMenuKeys.putIfAbsent(profile.id, () => GlobalKey<AppMenuButtonState<_TileAction>>());
   }
 
   void _pruneProfileFocusResources(Set<String> activeIds) {
@@ -414,18 +352,8 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
     _profileMenuKeys[profile.id]?.currentState?.showButtonMenu();
   }
 
-  List<Widget> _buildSections(
-    ActiveProfileProvider activeProvider,
-    String? activeId,
-  ) {
-    return [
-      _profileList(
-        activeProvider.profiles,
-        activeProvider,
-        activeId,
-        autofocusFirst: true,
-      ),
-    ];
+  List<Widget> _buildSections(ActiveProfileProvider activeProvider, String? activeId) {
+    return [_profileList(activeProvider.profiles, activeProvider, activeId, autofocusFirst: true)];
   }
 
   SliverList _profileList(
@@ -457,36 +385,18 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
           // Manage/Delete flow racing the in-flight switch corrupts state
           // (e.g. a delete confirmation left open when the switch settles).
           final actionsEnabled = !widget.requireSelection && !_switching;
-          final onManage = actionsEnabled
-              ? () => _manageProfile(profile)
-              : null;
-          final onShowLink = actionsEnabled
-              ? () => _showProfileLink(profile)
-              : null;
-          final onDelete = profile.isLocal && actionsEnabled
-              ? () => _deleteProfile(profile)
-              : null;
-          final onSignOut =
-              profile.isPlexHome &&
-                  profile.parentConnectionId != null &&
-                  actionsEnabled
+          final onManage = actionsEnabled ? () => _manageProfile(profile) : null;
+          final onShowLink = actionsEnabled ? () => _showProfileLink(profile) : null;
+          final onDelete = profile.isLocal && actionsEnabled ? () => _deleteProfile(profile) : null;
+          final onSignOut = profile.isPlexHome && profile.parentConnectionId != null && actionsEnabled
               ? () => _signOutPlexAccount(profile)
               : null;
-          final hasMenu =
-              onManage != null ||
-              onShowLink != null ||
-              onDelete != null ||
-              onSignOut != null;
+          final hasMenu = onManage != null || onShowLink != null || onDelete != null || onSignOut != null;
           final connections = _chipsFor(profile, activeProvider);
 
           return Padding(
             key: ValueKey(profile.id),
-            padding: EdgeInsets.fromLTRB(
-              16,
-              index == 0 ? 4 : tokensRef.groupGap,
-              16,
-              0,
-            ),
+            padding: EdgeInsets.fromLTRB(16, index == 0 ? 4 : tokensRef.groupGap, 16, 0),
             // The focus fill must paint above the opaque Card surface, so the
             // wrapper sits inside the Card (clipped by its shape) rather than
             // around it.
@@ -501,12 +411,8 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
                 borderRadii: tileRadii,
                 enableLongPress: hasMenu,
                 onLongPress: hasMenu ? () => _openProfileMenu(profile) : null,
-                onNavigateRight: hasMenu
-                    ? () => menuFocusNode.requestFocus()
-                    : null,
-                onSelect: _switching || (isActive && !widget.requireSelection)
-                    ? null
-                    : () => _switchTo(profile),
+                onNavigateRight: hasMenu ? () => menuFocusNode.requestFocus() : null,
+                onSelect: _switching || (isActive && !widget.requireSelection) ? null : () => _switchTo(profile),
                 child: _ProfileTile(
                   borderRadius: tileRadii,
                   profile: profile,
@@ -550,16 +456,11 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
   /// [showPinEntryDialog].
   Future<bool> _verifyPinForProfileAction(Profile profile) async {
     if (!profile.isLocal || !profile.isPinProtected) return true;
-    if (profile.id == context.read<ActiveProfileProvider>().activeId)
-      return true;
+    if (profile.id == context.read<ActiveProfileProvider>().activeId) return true;
     String? errorMessage;
     while (true) {
       if (!mounted) return false;
-      final pin = await showPinEntryDialog(
-        context,
-        profile.displayName,
-        errorMessage: errorMessage,
-      );
+      final pin = await showPinEntryDialog(context, profile.displayName, errorMessage: errorMessage);
       if (!mounted || pin == null) return false;
       if (verifyProfilePin(profile, pin)) return true;
       errorMessage = t.profiles.incorrectPinTryAgain;
@@ -569,15 +470,12 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
   Future<void> _manageProfile(Profile profile) async {
     if (!await _verifyPinForProfileAction(profile)) return;
     if (!mounted) return;
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => ProfileDetailScreen(profile: profile)),
-    );
+    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProfileDetailScreen(profile: profile)));
   }
 
   /// Not behind [_verifyPinForProfileAction]: opening the link still asks
   /// for a protected profile's PIN.
-  Future<void> _showProfileLink(Profile profile) =>
-      showProfileLinkDialog(context, profile);
+  Future<void> _showProfileLink(Profile profile) => showProfileLinkDialog(context, profile);
 
   /// Drop the parent Plex account [profile] hangs off — same effect as
   /// "Forget account" elsewhere in Plex apps. The shared teardown flow
@@ -597,29 +495,20 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
       context,
       profile: profile,
       title: t.profiles.deleteThisProfileTitle,
-      message: t.profiles.deleteThisProfileMessage(
-        displayName: profile.displayName,
-      ),
+      message: t.profiles.deleteThisProfileMessage(displayName: profile.displayName),
     );
   }
 
   /// The chips under [profile]'s name. `hasConnections` is false only when the
   /// profile reaches no connection at all; `chips` can be empty without it
   /// when the only chip would repeat the tile's own name.
-  ({List<_ChipData> chips, bool hasConnections}) _chipsFor(
-    Profile profile,
-    ActiveProfileProvider activeProvider,
-  ) {
+  ({List<_ChipData> chips, bool hasConnections}) _chipsFor(Profile profile, ActiveProfileProvider activeProvider) {
     final chips = <_ChipData>[];
     var hasConnections = false;
     // With a single Plex account on the device, naming it under every tile
     // tells no two profiles apart and reads as if each were that account's
     // owner (#2590).
-    final namesAccount =
-        activeProvider.connectionsById.values
-            .whereType<PlexAccountConnection>()
-            .length >
-        1;
+    final namesAccount = activeProvider.connectionsById.values.whereType<PlexAccountConnection>().length > 1;
     // Plex Home profiles implicitly own their parent Plex connection (no
     // join-table row), so prepend it before any borrowed connections. The
     // profile *is* the Home user there, so its own name identifies the user
@@ -631,28 +520,20 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
         final conn = activeProvider.connectionsById[parentId];
         if (conn != null) {
           hasConnections = true;
-          if (namesAccount)
-            chips.add(
-              _chipFor(conn, user: profile.displayName, namesAccount: true),
-            );
+          if (namesAccount) chips.add(_chipFor(conn, user: profile.displayName, namesAccount: true));
         }
       }
     }
     final pcs = visibleProfileConnections(
       profile,
-      activeProvider.connectionsByProfile[profile.id] ??
-          const <ProfileConnection>[],
+      activeProvider.connectionsByProfile[profile.id] ?? const <ProfileConnection>[],
     );
     for (final pc in pcs) {
       final conn = activeProvider.connectionsById[pc.connectionId];
       if (conn == null) continue;
       hasConnections = true;
       chips.add(
-        _chipFor(
-          conn,
-          user: _plexHomeUserName(activeProvider, conn, pc.userIdentifier),
-          namesAccount: namesAccount,
-        ),
+        _chipFor(conn, user: _plexHomeUserName(activeProvider, conn, pc.userIdentifier), namesAccount: namesAccount),
       );
     }
     return (chips: chips, hasConnections: hasConnections);
@@ -668,19 +549,16 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
   /// `tr`, `zh`). [namesAccount] false drops the account half and leaves the
   /// user. [user] is null only when the Home cache cannot resolve the
   /// connection's uuid yet, which falls back to naming the account alone.
-  _ChipData _chipFor(
-    Connection conn, {
-    required String? user,
-    required bool namesAccount,
-  }) {
+  _ChipData _chipFor(Connection conn, {required String? user, required bool namesAccount}) {
     return _ChipData(
       backend: conn.backend,
       label: switch (conn) {
         PlexAccountConnection() when user != null && !namesAccount => user,
-        PlexAccountConnection(:final accountLabel) when user != null =>
-          t.profiles.plexAccountUserChip(user: user, account: accountLabel),
-        PlexAccountConnection(:final accountLabel) =>
-          t.profiles.plexAccountChip(account: accountLabel),
+        PlexAccountConnection(:final accountLabel) when user != null => t.profiles.plexAccountUserChip(
+          user: user,
+          account: accountLabel,
+        ),
+        PlexAccountConnection(:final accountLabel) => t.profiles.plexAccountChip(account: accountLabel),
         _ => conn.displayLabel,
       },
     );
@@ -689,11 +567,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
   /// Home user behind a borrowed Plex connection, or null when the live cache
   /// has no match for [userIdentifier] (not loaded yet, or the row predates
   /// the account's current Home membership).
-  String? _plexHomeUserName(
-    ActiveProfileProvider activeProvider,
-    Connection conn,
-    String userIdentifier,
-  ) {
+  String? _plexHomeUserName(ActiveProfileProvider activeProvider, Connection conn, String userIdentifier) {
     if (conn is! PlexAccountConnection || userIdentifier.isEmpty) return null;
     final users = activeProvider.plexHomeByConnectionId[conn.id];
     if (users == null) return null;
@@ -704,9 +578,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen>
   }
 
   Future<void> _addLocalProfile() async {
-    await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const AddLocalProfileScreen()),
-    );
+    await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => const AddLocalProfileScreen()));
   }
 
   Future<void> _switchTo(Profile profile) async {
@@ -774,11 +646,7 @@ class _ProfileTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final hasMenu =
-        onManage != null ||
-        onShowLink != null ||
-        onDelete != null ||
-        onSignOut != null;
+    final hasMenu = onManage != null || onShowLink != null || onDelete != null || onSignOut != null;
     return InkWell(
       canRequestFocus: false,
       onTap: isActive ? null : onTap,
@@ -798,28 +666,17 @@ class _ProfileTile extends StatelessWidget {
                   Row(
                     children: [
                       Flexible(
-                        child: Text(
-                          profile.displayName,
-                          style: theme.textTheme.titleMedium,
-                          overflow: .ellipsis,
-                        ),
+                        child: Text(profile.displayName, style: theme.textTheme.titleMedium, overflow: .ellipsis),
                       ),
                       if (isActive) ...[
                         const SizedBox(width: 8),
                         // Plain inline indicator instead of a boxed badge: a
                         // filled pill fights the tile's own focus fill.
-                        AppIcon(
-                          Symbols.check_circle_rounded,
-                          fill: 1,
-                          size: 16,
-                          color: tokens(context).textMuted,
-                        ),
+                        AppIcon(Symbols.check_circle_rounded, fill: 1, size: 16, color: tokens(context).textMuted),
                         const SizedBox(width: 4),
                         Text(
                           t.profiles.active,
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: tokens(context).textMuted,
-                          ),
+                          style: theme.textTheme.labelMedium?.copyWith(color: tokens(context).textMuted),
                         ),
                       ],
                     ],
@@ -845,10 +702,7 @@ class _ProfileTile extends StatelessWidget {
                 ],
               )
             else if (!isActive)
-              const Padding(
-                padding: .only(left: 8),
-                child: AppIcon(Symbols.chevron_right_rounded, fill: 1),
-              ),
+              const Padding(padding: .only(left: 8), child: AppIcon(Symbols.chevron_right_rounded, fill: 1)),
           ],
         ),
       ),
@@ -900,10 +754,7 @@ class _ProfileActionsButton extends StatelessWidget {
       icon: const AppIcon(Symbols.more_vert_rounded, fill: 1),
       tooltip: t.profiles.manage,
       onSelected: onSelected,
-      itemBuilder: (_) => [
-        for (final action in actions)
-          AppMenuItem(value: action, label: action.label),
-      ],
+      itemBuilder: (_) => [for (final action in actions) AppMenuItem(value: action, label: action.label)],
     );
   }
 }
@@ -930,12 +781,7 @@ class _ConnectionChips extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     if (chips.isEmpty) {
-      return Text(
-        t.profiles.noConnections,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.error,
-        ),
-      );
+      return Text(t.profiles.noConnections, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error));
     }
     // Plain muted metadata instead of boxed chips: any filled pill fights the
     // tile's own focus fill (and the opaque theme surfaces read as dark holes
@@ -956,9 +802,7 @@ class _ConnectionChips extends StatelessWidget {
               Flexible(
                 child: Text(
                   c.label,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: tokens(context).textMuted,
-                  ),
+                  style: theme.textTheme.labelSmall?.copyWith(color: tokens(context).textMuted),
                   overflow: .ellipsis,
                 ),
               ),

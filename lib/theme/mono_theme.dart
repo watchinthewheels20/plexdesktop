@@ -22,8 +22,7 @@ enum MonoPaletteSlot {
 }
 
 /// [color] as `#AARRGGBB`, upper case.
-String colorToArgbHex(Color color) =>
-    '#${color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
+String colorToArgbHex(Color color) => '#${color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
 
 final _hexColorPattern = RegExp(r'^#?([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$');
 
@@ -159,13 +158,11 @@ class MonoPalette {
         : white;
   }
 
-  static double _contrastRatio(double a, double b) =>
-      (math.max(a, b) + 0.05) / (math.min(a, b) + 0.05);
+  static double _contrastRatio(double a, double b) => (math.max(a, b) + 0.05) / (math.min(a, b) + 0.05);
 
   /// WCAG 2 contrast ratio between two colours, ignoring alpha: composite a
   /// translucent colour over its background first.
-  static double contrastRatio(Color a, Color b) =>
-      _contrastRatio(a.computeLuminance(), b.computeLuminance());
+  static double contrastRatio(Color a, Color b) => _contrastRatio(a.computeLuminance(), b.computeLuminance());
 
   Color operator [](MonoPaletteSlot slot) => switch (slot) {
     MonoPaletteSlot.bg => bg,
@@ -187,10 +184,7 @@ class MonoPalette {
   );
 
   /// `{"bg": "#AARRGGBB", …}`, keyed by [MonoPaletteSlot.id].
-  Map<String, String> toJson() => {
-    for (final slot in MonoPaletteSlot.values)
-      slot.id: colorToArgbHex(this[slot]),
-  };
+  Map<String, String> toJson() => {for (final slot in MonoPaletteSlot.values) slot.id: colorToArgbHex(this[slot])};
 
   /// Reads the [toJson] shape. Throws [FormatException] unless every slot
   /// holds a hex colour, so a partial or corrupt value never yields a palette
@@ -200,8 +194,7 @@ class MonoPalette {
     Color read(MonoPaletteSlot slot) {
       final value = json[slot.id];
       final color = value is String ? tryParseHexColor(value) : null;
-      if (color == null)
-        throw FormatException('Missing or invalid "${slot.id}" colour');
+      if (color == null) throw FormatException('Missing or invalid "${slot.id}" colour');
       return color;
     }
 
@@ -226,12 +219,10 @@ class MonoPalette {
       other.accent == accent;
 
   @override
-  int get hashCode =>
-      Object.hash(bg, surface, outline, text, textMuted, accent);
+  int get hashCode => Object.hash(bg, surface, outline, text, textMuted, accent);
 }
 
-final Map<({MonoPalette palette, TargetPlatform platform}), ThemeData>
-_monoThemeCache = {};
+final Map<({MonoPalette palette, TargetPlatform platform}), ThemeData> _monoThemeCache = {};
 
 ThemeData monoTheme(MonoPalette palette) {
   // ThemeData derives several defaults from defaultTargetPlatform.
@@ -247,42 +238,31 @@ ThemeData monoTheme(MonoPalette palette) {
 /// [monoTheme] without the cache, for a palette that changes every frame: the
 /// custom theme editor's live preview would otherwise keep every intermediate
 /// palette's theme alive.
-ThemeData monoThemeUncached(MonoPalette palette) =>
-    _buildMonoTheme(palette, platform: defaultTargetPlatform);
+ThemeData monoThemeUncached(MonoPalette palette) => _buildMonoTheme(palette, platform: defaultTargetPlatform);
 
 ThemeData _buildMonoTheme(MonoPalette c, {required TargetPlatform platform}) {
   final brightness = c.brightness;
   final onAccent = c.onAccent;
   final isWindowsWeb = platform == TargetPlatform.windows;
   final clickableCursor = WidgetStateProperty.resolveWith<MouseCursor>(
-    (states) => states.contains(WidgetState.disabled)
-        ? MouseCursor.defer
-        : SystemMouseCursors.click,
+    (states) => states.contains(WidgetState.disabled) ? MouseCursor.defer : SystemMouseCursors.click,
   );
 
   // Disabled buttons use the Material disabled opacities over the text colour;
   // a flat colour for every state made them look pressable.
   final buttonStyle = ButtonStyle(
     mouseCursor: clickableCursor,
-    padding: const WidgetStatePropertyAll(
-      EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-    ),
+    padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 18, vertical: 14)),
     elevation: const WidgetStatePropertyAll(0),
     backgroundColor: WidgetStateProperty.resolveWith(
-      (states) => states.contains(WidgetState.disabled)
-          ? c.text.withValues(alpha: 0.12)
-          : c.accent,
+      (states) => states.contains(WidgetState.disabled) ? c.text.withValues(alpha: 0.12) : c.accent,
     ),
     foregroundColor: WidgetStateProperty.resolveWith(
-      (states) => states.contains(WidgetState.disabled)
-          ? c.text.withValues(alpha: 0.38)
-          : onAccent,
+      (states) => states.contains(WidgetState.disabled) ? c.text.withValues(alpha: 0.38) : onAccent,
     ),
     shape: WidgetStatePropertyAll(
       isWindowsWeb
-          ? const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(4)),
-            )
+          ? const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4)))
           : const StadiumBorder(),
     ),
   );
@@ -294,9 +274,7 @@ ThemeData _buildMonoTheme(MonoPalette c, {required TargetPlatform platform}) {
     // Linux resolves UI text through fontconfig, which on a minimal desktop
     // may have no CJK font at all; the bundled subtitle fonts (pubspec
     // `fonts:`) cover it. Other platforms keep their native CJK fonts.
-    fontFamilyFallback: platform == TargetPlatform.linux
-        ? const ['Go Noto Current', 'Go Noto Current Hangul']
-        : null,
+    fontFamilyFallback: platform == TargetPlatform.linux ? const ['Go Noto Current', 'Go Noto Current Hangul'] : null,
     colorScheme: ColorScheme(
       brightness: brightness,
       // Accent: everything Material derives from primary (switches, sliders,
@@ -345,12 +323,7 @@ ThemeData _buildMonoTheme(MonoPalette c, {required TargetPlatform platform}) {
       scrolledUnderElevation: 0,
       centerTitle: false,
       foregroundColor: c.text,
-      titleTextStyle: TextStyle(
-        color: c.text,
-        fontSize: 18,
-        fontWeight: .w700,
-        letterSpacing: -0.2,
-      ),
+      titleTextStyle: TextStyle(color: c.text, fontSize: 18, fontWeight: .w700, letterSpacing: -0.2),
     ),
     textTheme: Typography.englishLike2021
         .apply(bodyColor: c.text, displayColor: c.text)
@@ -364,22 +337,14 @@ ThemeData _buildMonoTheme(MonoPalette c, {required TargetPlatform platform}) {
       color: c.surface,
       elevation: 0,
       margin: .zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(isWindowsWeb ? 4 : 14),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(isWindowsWeb ? 4 : 14)),
     ),
     inputDecorationTheme: _inputDecorationTheme(c.text, c.textMuted),
     elevatedButtonTheme: ElevatedButtonThemeData(style: buttonStyle),
     filledButtonTheme: FilledButtonThemeData(style: buttonStyle),
-    textButtonTheme: TextButtonThemeData(
-      style: ButtonStyle(mouseCursor: clickableCursor),
-    ),
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: ButtonStyle(mouseCursor: clickableCursor),
-    ),
-    iconButtonTheme: IconButtonThemeData(
-      style: ButtonStyle(mouseCursor: clickableCursor),
-    ),
+    textButtonTheme: TextButtonThemeData(style: ButtonStyle(mouseCursor: clickableCursor)),
+    outlinedButtonTheme: OutlinedButtonThemeData(style: ButtonStyle(mouseCursor: clickableCursor)),
+    iconButtonTheme: IconButtonThemeData(style: ButtonStyle(mouseCursor: clickableCursor)),
     sliderTheme: SliderThemeData(
       // The mono scheme maps surfaceContainerHighest (the M3 default inactive
       // track) to the same color as surface cards, which makes the inactive
@@ -405,16 +370,10 @@ ThemeData _buildMonoTheme(MonoPalette c, {required TargetPlatform platform}) {
       backgroundColor: c.bg,
       elevation: 0,
       indicatorColor: Colors.transparent,
-      labelTextStyle: WidgetStatePropertyAll(
-        TextStyle(color: c.textMuted, fontSize: 11),
-      ),
+      labelTextStyle: WidgetStatePropertyAll(TextStyle(color: c.textMuted, fontSize: 11)),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         final active = states.contains(WidgetState.selected);
-        return IconThemeData(
-          opacity: active ? 1 : 0.6,
-          size: 22,
-          color: active ? c.accent : c.text,
-        );
+        return IconThemeData(opacity: active ? 1 : 0.6, size: 22, color: active ? c.accent : c.text);
       }),
     ),
     // Floating snackbars auto-offset above the Scaffold's bottom NavigationBar,
@@ -426,9 +385,7 @@ ThemeData _buildMonoTheme(MonoPalette c, {required TargetPlatform platform}) {
       contentTextStyle: TextStyle(color: c.text),
       actionTextColor: c.text,
       elevation: 6,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
       insetPadding: const EdgeInsets.all(16),
     ),
   );
@@ -461,15 +418,11 @@ ThemeData _buildMonoTheme(MonoPalette c, {required TargetPlatform platform}) {
 InputDecorationTheme _inputDecorationTheme(Color text, Color textMuted) {
   final unfocusedFill = text.withValues(alpha: 0.08);
   final focusedFill = text.withValues(alpha: 0.18);
-  const border = OutlineInputBorder(
-    borderRadius: BorderRadius.all(Radius.circular(12)),
-    borderSide: BorderSide.none,
-  );
+  const border = OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12)), borderSide: BorderSide.none);
   return InputDecorationTheme(
     filled: true,
     fillColor: WidgetStateColor.resolveWith(
-      (states) =>
-          states.contains(WidgetState.focused) ? focusedFill : unfocusedFill,
+      (states) => states.contains(WidgetState.focused) ? focusedFill : unfocusedFill,
     ),
     isDense: true,
     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

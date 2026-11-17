@@ -70,15 +70,10 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
     final generation = ++_loadGeneration;
     final metadata = widget.metadata;
     try {
-      final client = context.getMediaClientWithFallback(
-        serverIdOrNull(metadata.serverId),
-      );
+      final client = context.getMediaClientWithFallback(serverIdOrNull(metadata.serverId));
       final adapter = metadataEditAdapterFor(client);
       if (adapter == null || !adapter.supportsKind(metadata.kind)) {
-        if (!mounted ||
-            generation != _loadGeneration ||
-            !_sameMedia(widget.metadata, metadata))
-          return;
+        if (!mounted || generation != _loadGeneration || !_sameMedia(widget.metadata, metadata)) return;
         setState(() {
           _adapter = adapter;
           _isLoading = false;
@@ -86,10 +81,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
         return;
       }
       final draft = await adapter.load(metadata);
-      if (!mounted ||
-          generation != _loadGeneration ||
-          !_sameMedia(widget.metadata, metadata))
-        return;
+      if (!mounted || generation != _loadGeneration || !_sameMedia(widget.metadata, metadata)) return;
       setState(() {
         _adapter = adapter;
         _draft = draft;
@@ -97,10 +89,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
       });
     } catch (e, st) {
       appLogger.e('Failed to load metadata editor', error: e, stackTrace: st);
-      if (!mounted ||
-          generation != _loadGeneration ||
-          !_sameMedia(widget.metadata, metadata))
-        return;
+      if (!mounted || generation != _loadGeneration || !_sameMedia(widget.metadata, metadata)) return;
       setState(() => _isLoading = false);
       showErrorSnackBar(context, t.metadataEdit.metadataUpdateFailed);
     }
@@ -116,8 +105,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
     final adapter = _adapter;
     final draft = _draft;
     final metadata = widget.metadata;
-    if (adapter == null || draft == null || !_hasChanges || _isCommitting)
-      return;
+    if (adapter == null || draft == null || !_hasChanges || _isCommitting) return;
 
     setState(() => _isCommitting = true);
     // Snapshot newly added values per stringList field before save() runs
@@ -131,11 +119,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
               .expand((section) => section.fields)
               .where((field) => field.type == MetadataEditFieldType.stringList))
         if (metadataStringList(draft.values[field.id])
-                .where(
-                  (tag) =>
-                      !metadataStringList(draft.originalValues[field.id])
-                          .contains(tag),
-                )
+                .where((tag) => !metadataStringList(draft.originalValues[field.id]).contains(tag))
                 .toList()
             case final added when added.isNotEmpty)
           field.id: added,
@@ -147,26 +131,16 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
       appLogger.e('Failed to update metadata', error: e, stackTrace: st);
     }
 
-    if (success &&
-        addedByField.isNotEmpty &&
-        profileId != null &&
-        profileId.isNotEmpty &&
-        serverId != null) {
+    if (success && addedByField.isNotEmpty && profileId != null && profileId.isNotEmpty && serverId != null) {
       for (final entry in addedByField.entries) {
         unawaited(
-          RecentTagsService.addRecentTags(
-            entry.value,
-            profileId: profileId,
-            serverId: serverId,
-            fieldId: entry.key,
-          ),
+          RecentTagsService.addRecentTags(entry.value, profileId: profileId, serverId: serverId, fieldId: entry.key),
         );
       }
     }
 
     if (!mounted) return;
-    final ownsCompletion =
-        identical(_draft, draft) && _sameMedia(widget.metadata, metadata);
+    final ownsCompletion = identical(_draft, draft) && _sameMedia(widget.metadata, metadata);
     setState(() => _isCommitting = false);
     if (!ownsCompletion) return;
 
@@ -178,10 +152,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
     }
   }
 
-  Future<void> _editTextField(
-    MetadataEditField field, {
-    bool multiline = false,
-  }) async {
+  Future<void> _editTextField(MetadataEditField field, {bool multiline = false}) async {
     final draft = _draft;
     if (draft == null || _isCommitting) return;
     final currentValue = draft.value<String>(field.id) ?? '';
@@ -194,10 +165,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
       multiline: multiline,
     );
 
-    if (result != null &&
-        mounted &&
-        !_isCommitting &&
-        identical(_draft, draft)) {
+    if (result != null && mounted && !_isCommitting && identical(_draft, draft)) {
       setState(() => draft.setValue(field.id, result));
     }
   }
@@ -220,15 +188,9 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
       useRootNavigator: false,
     );
 
-    if (picked != null &&
-        mounted &&
-        !_isCommitting &&
-        identical(_draft, draft)) {
+    if (picked != null && mounted && !_isCommitting && identical(_draft, draft)) {
       setState(() {
-        draft.setValue(
-          field.id,
-          '${picked.year}-${padNumber(picked.month, 2)}-${padNumber(picked.day, 2)}',
-        );
+        draft.setValue(field.id, '${picked.year}-${padNumber(picked.month, 2)}-${padNumber(picked.day, 2)}');
       });
     }
   }
@@ -241,11 +203,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
     final serverId = widget.metadata.serverId;
     final recent = (profileId == null || profileId.isEmpty || serverId == null)
         ? const <String>[]
-        : RecentTagsService.getRecentTags(
-            profileId: profileId,
-            serverId: serverId,
-            fieldId: field.id,
-          );
+        : RecentTagsService.getRecentTags(profileId: profileId, serverId: serverId, fieldId: field.id);
     final suggestionsFuture = adapter
         .fetchTagSuggestions(draft, field)
         .then(
@@ -264,10 +222,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
         suggestionsFuture: suggestionsFuture,
       ),
     );
-    if (result != null &&
-        mounted &&
-        !_isCommitting &&
-        identical(_draft, draft)) {
+    if (result != null && mounted && !_isCommitting && identical(_draft, draft)) {
       setState(() => draft.setValue(field.id, result));
     }
   }
@@ -280,18 +235,11 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
     final picked = await showSelectionDialog<String>(
       context: context,
       title: field.label,
-      options: [
-        for (final option in field.options)
-          DialogOption(value: option.value, title: option.label),
-      ],
+      options: [for (final option in field.options) DialogOption(value: option.value, title: option.label)],
       currentValue: current,
     );
 
-    if (picked == null ||
-        !mounted ||
-        _isCommitting ||
-        !identical(_draft, draft))
-      return;
+    if (picked == null || !mounted || _isCommitting || !identical(_draft, draft)) return;
     final result = picked.value;
     if (field.saveMode == MetadataEditSaveMode.immediate) {
       final metadata = widget.metadata;
@@ -304,26 +252,18 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
       try {
         success = await adapter.saveImmediateField(draft, field, result);
       } catch (e, st) {
-        appLogger.e(
-          'Failed to update metadata field',
-          error: e,
-          stackTrace: st,
-        );
+        appLogger.e('Failed to update metadata field', error: e, stackTrace: st);
       }
       if (!mounted) return;
-      final ownsCompletion =
-          identical(_draft, draft) && _sameMedia(widget.metadata, metadata);
+      final ownsCompletion = identical(_draft, draft) && _sameMedia(widget.metadata, metadata);
       setState(() {
         _isCommitting = false;
-        if (!success &&
-            ownsCompletion &&
-            metadataEditValueEquals(draft.values[field.id], result)) {
+        if (!success && ownsCompletion && metadataEditValueEquals(draft.values[field.id], result)) {
           draft.setValue(field.id, previous);
         }
       });
       if (!ownsCompletion) return;
-      if (!success)
-        showErrorSnackBar(context, t.metadataEdit.metadataUpdateFailed);
+      if (!success) showErrorSnackBar(context, t.metadataEdit.metadataUpdateFailed);
     } else {
       setState(() => draft.setValue(field.id, result));
     }
@@ -335,14 +275,10 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
     if (adapter == null || draft == null || _isCommitting) return;
     final result = await showScopedDialog<bool>(
       context: context,
-      builder: (context) =>
-          ArtworkPickerDialog(adapter: adapter, draft: draft, field: field),
+      builder: (context) => ArtworkPickerDialog(adapter: adapter, draft: draft, field: field),
     );
 
-    if (result == true &&
-        mounted &&
-        !_isCommitting &&
-        identical(_draft, draft)) {
+    if (result == true && mounted && !_isCommitting && identical(_draft, draft)) {
       await _reloadArtwork();
     }
   }
@@ -365,10 +301,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return FocusedScrollScaffold(
-        title: Text(t.metadataEdit.screenTitle),
-        slivers: [LoadingIndicatorBox.sliver],
-      );
+      return FocusedScrollScaffold(title: Text(t.metadataEdit.screenTitle), slivers: [LoadingIndicatorBox.sliver]);
     }
 
     final adapter = _adapter;
@@ -376,25 +309,14 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
     if (adapter == null || draft == null) {
       return FocusedScrollScaffold(
         title: Text(t.metadataEdit.screenTitle),
-        slivers: [
-          SliverFillRemaining(
-            child: Center(child: Text(t.metadataEdit.metadataUpdateFailed)),
-          ),
-        ],
+        slivers: [SliverFillRemaining(child: Center(child: Text(t.metadataEdit.metadataUpdateFailed)))],
       );
     }
 
-    final sections = adapter
-        .schemaFor(draft)
-        .where((section) => section.fields.isNotEmpty)
-        .toList();
-    if (Theme.of(context).platform == TargetPlatform.windows &&
-        MediaQuery.sizeOf(context).width >= 740) {
+    final sections = adapter.schemaFor(draft).where((section) => section.fields.isNotEmpty).toList();
+    if (Theme.of(context).platform == TargetPlatform.windows && MediaQuery.sizeOf(context).width >= 740) {
       final selectedSection =
-          sections
-              .where((section) => section.id == _selectedWebSection)
-              .firstOrNull ??
-          sections.first;
+          sections.where((section) => section.id == _selectedWebSection).firstOrNull ?? sections.first;
       return PopScope(
         canPop: !_isCommitting,
         child: Scaffold(
@@ -402,10 +324,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
             title: Text('Edit ${widget.metadata.displayTitle}'),
             actions: [
               if (_isCommitting)
-                const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: LoadingIndicatorBox(size: 24),
-                )
+                const Padding(padding: EdgeInsets.all(12), child: LoadingIndicatorBox(size: 24))
               else
                 TextButton.icon(
                   onPressed: _hasChanges ? _save : null,
@@ -429,18 +348,13 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
                           title: Text(
                             section.title,
                             style: TextStyle(
-                              color: section.id == selectedSection.id
-                                  ? const Color(0xFFE5A00D)
-                                  : Colors.white70,
-                              fontWeight: section.id == selectedSection.id
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
+                              color: section.id == selectedSection.id ? const Color(0xFFE5A00D) : Colors.white70,
+                              fontWeight: section.id == selectedSection.id ? FontWeight.w600 : FontWeight.w400,
                             ),
                           ),
                           selected: section.id == selectedSection.id,
                           selectedTileColor: const Color(0x33292929),
-                          onTap: () =>
-                              setState(() => _selectedWebSection = section.id),
+                          onTap: () => setState(() => _selectedWebSection = section.id),
                         ),
                     ],
                   ),
@@ -465,10 +379,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
         focusableAppBarActions: true,
         actions: [
           if (_isCommitting)
-            const Padding(
-              padding: .all(12),
-              child: LoadingIndicatorBox(size: 24),
-            )
+            const Padding(padding: .all(12), child: LoadingIndicatorBox(size: 24))
           else
             FocusableButton(
               onPressed: _hasChanges ? _save : null,
@@ -485,8 +396,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
             sliver: SliverList.separated(
               itemCount: sections.length,
               separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) =>
-                  _buildSectionCard(adapter, draft, sections[index]),
+              itemBuilder: (context, index) => _buildSectionCard(adapter, draft, sections[index]),
             ),
           ),
         ],
@@ -494,35 +404,22 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
     );
   }
 
-  Widget _buildSectionCard(
-    MetadataEditAdapter adapter,
-    MetadataEditDraft draft,
-    MetadataEditSection section,
-  ) {
+  Widget _buildSectionCard(MetadataEditAdapter adapter, MetadataEditDraft draft, MetadataEditSection section) {
     return Card(
       child: Column(
         crossAxisAlignment: .start,
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Text(
-              section.title,
-              style: Theme.of(context).textTheme.titleMedium
-                  ?.copyWith(fontWeight: .bold),
-            ),
+            child: Text(section.title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: .bold)),
           ),
-          for (final field in section.fields)
-            _buildField(adapter, draft, field),
+          for (final field in section.fields) _buildField(adapter, draft, field),
         ],
       ),
     );
   }
 
-  Widget _buildField(
-    MetadataEditAdapter adapter,
-    MetadataEditDraft draft,
-    MetadataEditField field,
-  ) {
+  Widget _buildField(MetadataEditAdapter adapter, MetadataEditDraft draft, MetadataEditField field) {
     return switch (field.type) {
       MetadataEditFieldType.text => _buildFieldTile(
         label: field.label,
@@ -553,14 +450,8 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
     };
   }
 
-  Widget _buildFieldTile({
-    required String label,
-    String? value,
-    required VoidCallback onTap,
-  }) {
-    final displayValue = (value == null || value.isEmpty)
-        ? t.metadataEdit.notSet
-        : value;
+  Widget _buildFieldTile({required String label, String? value, required VoidCallback onTap}) {
+    final displayValue = (value == null || value.isEmpty) ? t.metadataEdit.notSet : value;
     final isNotSet = value == null || value.isEmpty;
     return FocusableListTile(
       title: Text(label),
@@ -569,10 +460,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
         maxLines: 2,
         overflow: .ellipsis,
         style: isNotSet
-            ? TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant
-                    .withValues(alpha: 0.5),
-              )
+            ? TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5))
             : null,
       ),
       trailing: const AppIcon(Symbols.chevron_right_rounded),
@@ -583,11 +471,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
     );
   }
 
-  Widget _buildArtworkTile(
-    MetadataEditAdapter adapter,
-    MetadataEditDraft draft,
-    MetadataEditField field,
-  ) {
+  Widget _buildArtworkTile(MetadataEditAdapter adapter, MetadataEditDraft draft, MetadataEditField field) {
     final artwork = field.artwork!;
     final imagePath = draft.value<String>(field.id);
     return FocusableListTile(
@@ -601,9 +485,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
             imagePath: imagePath,
             width: artwork.previewWidth,
             height: artwork.previewHeight,
-            fit: artwork.fit == MetadataArtworkFit.contain
-                ? BoxFit.contain
-                : BoxFit.cover,
+            fit: artwork.fit == MetadataArtworkFit.contain ? BoxFit.contain : BoxFit.cover,
             imageType: artwork.imageType,
           ),
         ),
@@ -626,9 +508,7 @@ class _MetadataEditScreenState extends State<MetadataEditScreen> {
 }
 
 bool _sameMedia(MediaItem left, MediaItem right) {
-  return left.id == right.id &&
-      left.backend == right.backend &&
-      left.serverId == right.serverId;
+  return left.id == right.id && left.backend == right.backend && left.serverId == right.serverId;
 }
 
 class ArtworkPickerDialog extends StatefulWidget {
@@ -636,12 +516,7 @@ class ArtworkPickerDialog extends StatefulWidget {
   final MetadataEditDraft draft;
   final MetadataEditField field;
 
-  const ArtworkPickerDialog({
-    super.key,
-    required this.adapter,
-    required this.draft,
-    required this.field,
-  });
+  const ArtworkPickerDialog({super.key, required this.adapter, required this.draft, required this.field});
 
   @override
   State<ArtworkPickerDialog> createState() => _ArtworkPickerDialogState();
@@ -662,10 +537,7 @@ class _ArtworkPickerDialogState extends State<ArtworkPickerDialog> {
 
   Future<void> _loadArtwork() async {
     try {
-      final artwork = await widget.adapter.fetchArtwork(
-        widget.draft,
-        widget.field,
-      );
+      final artwork = await widget.adapter.fetchArtwork(widget.draft, widget.field);
       if (!mounted) return;
       setState(() {
         _artworkList = artwork;
@@ -683,13 +555,7 @@ class _ArtworkPickerDialogState extends State<ArtworkPickerDialog> {
 
   Future<void> _selectArtwork(MetadataArtworkOption artwork) async {
     if (_isApplying) return;
-    await _runArtworkUpdate(
-      () => widget.adapter.applyArtworkOption(
-        widget.draft,
-        widget.field,
-        artwork,
-      ),
-    );
+    await _runArtworkUpdate(() => widget.adapter.applyArtworkOption(widget.draft, widget.field, artwork));
   }
 
   Future<void> _addFromUrl() async {
@@ -701,28 +567,16 @@ class _ArtworkPickerDialogState extends State<ArtworkPickerDialog> {
     );
 
     if (url == null || url.isEmpty || !mounted) return;
-    await _runArtworkUpdate(
-      () => widget.adapter.applyArtworkFromUrl(widget.draft, widget.field, url),
-    );
+    await _runArtworkUpdate(() => widget.adapter.applyArtworkFromUrl(widget.draft, widget.field, url));
   }
 
   Future<void> _uploadFile() async {
-    final result = await FilePickerService.instance.pickFiles(
-      type: FileType.image,
-      withData: true,
-    );
+    final result = await FilePickerService.instance.pickFiles(type: FileType.image, withData: true);
     if (result == null || result.files.isEmpty || !mounted) return;
     final file = result.files.first;
     final bytes = file.bytes;
     if (bytes == null) return;
-    await _runArtworkUpdate(
-      () => widget.adapter.uploadArtwork(
-        widget.draft,
-        widget.field,
-        bytes,
-        fileName: file.name,
-      ),
-    );
+    await _runArtworkUpdate(() => widget.adapter.uploadArtwork(widget.draft, widget.field, bytes, fileName: file.name));
   }
 
   Future<void> _runArtworkUpdate(Future<bool> Function() action) async {
@@ -753,16 +607,10 @@ class _ArtworkPickerDialogState extends State<ArtworkPickerDialog> {
         content: SizedBox(
           width: 500,
           height: 400,
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _buildArtworkContent(),
+          child: _isLoading ? const Center(child: CircularProgressIndicator()) : _buildArtworkContent(),
         ),
         actions: [
-          if (_isApplying)
-            const Padding(
-              padding: .all(8),
-              child: LoadingIndicatorBox(size: 24),
-            ),
+          if (_isApplying) const Padding(padding: .all(8), child: LoadingIndicatorBox(size: 24)),
           DialogActionButton(
             onPressed: _isApplying ? null : _addFromUrl,
             label: t.metadataEdit.fromUrl,
@@ -797,9 +645,7 @@ class _ArtworkPickerDialogState extends State<ArtworkPickerDialog> {
       itemCount: _artworkList!.length,
       itemBuilder: (context, index) {
         final artwork = _artworkList![index];
-        final VoidCallback? onSelect = _isApplying
-            ? null
-            : () => _selectArtwork(artwork);
+        final VoidCallback? onSelect = _isApplying ? null : () => _selectArtwork(artwork);
         return FocusableWrapper(
           borderRadius: 8,
           semanticLabel: artwork.selected
@@ -814,9 +660,7 @@ class _ArtworkPickerDialogState extends State<ArtworkPickerDialog> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest,
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: const BorderRadius.all(Radius.circular(8)),
                   ),
                   child: ClipRRect(
@@ -824,9 +668,7 @@ class _ArtworkPickerDialogState extends State<ArtworkPickerDialog> {
                     child: OptimizedMediaImage(
                       client: widget.adapter.mediaClient,
                       imagePath: artwork.thumbnailPath,
-                      fit: _config.fit == MetadataArtworkFit.contain
-                          ? BoxFit.contain
-                          : BoxFit.cover,
+                      fit: _config.fit == MetadataArtworkFit.contain ? BoxFit.contain : BoxFit.cover,
                       imageType: _config.imageType,
                     ),
                   ),
@@ -837,15 +679,8 @@ class _ArtworkPickerDialogState extends State<ArtworkPickerDialog> {
                     bottom: 6,
                     child: Container(
                       padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: AppIcon(
-                        Symbols.check_rounded,
-                        size: 16,
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ),
+                      decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
+                      child: AppIcon(Symbols.check_rounded, size: 16, color: Theme.of(context).colorScheme.onPrimary),
                     ),
                   ),
               ],
