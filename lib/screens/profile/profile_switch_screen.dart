@@ -47,6 +47,7 @@ class ProfileSwitchScreen extends StatefulWidget {
 
 class _ProfileSwitchScreenState extends State<ProfileSwitchScreen> with MountedSetStateMixin {
   bool _allowPop = false;
+  final FocusNode _addProfileFocusNode = FocusNode(debugLabel: 'AddLocalProfile');
   final Map<String, FocusNode> _profileFocusNodes = {};
   final Map<String, FocusNode> _profileMenuFocusNodes = {};
   final Map<String, GlobalKey<AppMenuButtonState<_TileAction>>> _profileMenuKeys = {};
@@ -54,6 +55,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen> with MountedS
 
   @override
   void dispose() {
+    _addProfileFocusNode.dispose();
     for (final node in _profileFocusNodes.values) {
       node.dispose();
     }
@@ -272,30 +274,38 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen> with MountedS
     return SizedBox(
       width: 180,
       height: 255,
-      child: Material(
-        color: const Color(0xFF262626),
-        borderRadius: BorderRadius.circular(4),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: _switching ? null : _addLocalProfile,
-          child: Column(
-            children: [
-              const Expanded(
-                child: Center(
-                  child: CircleAvatar(
-                    radius: 62,
-                    backgroundColor: Color(0xFF424242),
-                    child: Icon(Icons.add, size: 78, color: Color(0xFFE5A00D)),
+      child: FocusableWrapper(
+        focusNode: _addProfileFocusNode,
+        disableScale: true,
+        useBackgroundFocus: true,
+        descendantsAreFocusable: false,
+        borderRadius: 4,
+        onSelect: _switching ? null : _addLocalProfile,
+        child: Material(
+          color: const Color(0xFF262626),
+          borderRadius: BorderRadius.circular(4),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: _switching ? null : _addLocalProfile,
+            child: Column(
+              children: [
+                const Expanded(
+                  child: Center(
+                    child: CircleAvatar(
+                      radius: 62,
+                      backgroundColor: Color(0xFF424242),
+                      child: Icon(Icons.add, size: 78, color: Color(0xFFE5A00D)),
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                color: const Color(0xFF171717),
-                height: 75,
-                alignment: Alignment.center,
-                child: const Text('Add User...', style: TextStyle(color: Colors.white70, fontSize: 19)),
-              ),
-            ],
+                Container(
+                  color: const Color(0xFF171717),
+                  height: 75,
+                  alignment: Alignment.center,
+                  child: const Text('Add User...', style: TextStyle(color: Colors.white70, fontSize: 19)),
+                ),
+              ],
+            ),
           ),
         ),
       ),
