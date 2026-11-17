@@ -3511,7 +3511,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen>
     final windowsWebDetail = theme.platform == TargetPlatform.windows && size.width >= 770;
     final headerHeight = isTv
         ? size.height
-        : math.max(size.height * (windowsWebDetail ? 0.58 : 0.6), windowsWebDetail ? math.max(heroFloor, 414) : heroFloor);
+        : math.max(size.height * (windowsWebDetail ? 0.58 : 0.6), windowsWebDetail ? math.max(heroFloor, 414.0) : heroFloor);
 
     if (isTv) {
       return _buildTvDetailScreen(context, metadata, _handleMediaDetailBackKey);
