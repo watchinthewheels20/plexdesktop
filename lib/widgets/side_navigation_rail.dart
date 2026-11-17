@@ -170,6 +170,11 @@ class NavigationRailItem extends StatelessWidget {
     // The collapsed TV rail is a transparent overlay strip; a persistent
     // active pill over artwork is noise there, so it shows focus only.
     final showSelected = isSelected && !suppressSelectedBackground && !(collapsedLayout && PlatformDetector.isTV());
+    if (Platform.isWindows) {
+      if (focused) return t.accent.withValues(alpha: 0.24);
+      if (showSelected) return t.accent.withValues(alpha: 0.14);
+      return null;
+    }
     if (focused) return t.text.withValues(alpha: showSelected ? selectedFocusAlpha : focusAlpha);
     if (showSelected) return t.text.withValues(alpha: 0.1);
     return null;
@@ -272,7 +277,7 @@ class NavigationRailItem extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: fixedHeight ? 0 : 8),
       decoration: BoxDecoration(
         color: _indicatorColor(t, focused: focused, expansion: 1),
-        borderRadius: BorderRadius.circular(MonoTokens.radiusFull),
+        borderRadius: BorderRadius.circular(Platform.isWindows ? 3 : MonoTokens.radiusFull),
       ),
       child: _buildExpandedContent(context, t, labelOpacity: 1, showLeading: true),
     );
@@ -439,7 +444,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
   Timer? _collapseTimer;
   static const double collapsedWidth = 80.0;
   static const double tvCollapsedWidth = 48.0;
-  static const double expandedWidth = 220.0;
+  static const double expandedWidth = 320.0;
   static const double _horizontalPadding = 12.0;
   static const double _collapsedHorizontalPadding = 4.0;
   static const double _itemGap = 4.0;
@@ -843,7 +848,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
 
   /// Calculate top padding for macOS traffic lights
   double _getTopPadding(BuildContext context) {
-    double basePadding = MediaQuery.paddingOf(context).top + 16;
+    double basePadding = MediaQuery.paddingOf(context).top + (Platform.isWindows ? 12 : 16);
 
     // On macOS, add extra padding for traffic lights (when not fullscreen)
     if (Platform.isMacOS) {
@@ -905,7 +910,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
         final hasExplore = hasExploreSource && SettingsService.instance.read(SettingsService.showExploreTab);
         // Server grouping: only when multi-server AND the user-facing toggle is on.
         final groupByServerSetting = SettingsService.instance.read(SettingsService.groupLibrariesByServer);
-        final showServerHeaders = serverIds.length > 1 && groupByServerSetting;
+        final showServerHeaders = Platform.isWindows || (serverIds.length > 1 && groupByServerSetting);
         _collapsedServerGroupKeys.retainAll(
           _buildServerGroupStateKeys(visibleLibraries, hiddenLibraries, showServerHeaders: showServerHeaders),
         );
@@ -983,7 +988,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
                             // trailing corners, extra-rounded plus an edge
                             // shadow while floating over content (modal)
                             // instead of pushing it.
-                            borderRadius: isCollapsed
+                            borderRadius: isCollapsed || Platform.isWindows
                                 ? BorderRadius.zero
                                 : BorderRadius.horizontal(
                                     right: Radius.circular(_isFloatingPanel ? overlayCornerRadius : t.radiusLg),
@@ -1019,9 +1024,9 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
                                     ],
                                     if (!widget.isOfflineMode) ...[
                                       _buildNavItem(
-                                        icon: Symbols.home_rounded,
-                                        selectedIcon: Symbols.home_rounded,
-                                        label: Translations.of(context).common.home,
+                                        icon: Platform.isWindows ? Symbols.arrow_back_rounded : Symbols.home_rounded,
+                                        selectedIcon: Platform.isWindows ? Symbols.arrow_back_rounded : Symbols.home_rounded,
+                                        label: Platform.isWindows ? 'Pinned' : Translations.of(context).common.home,
                                         isSelected: widget.selectedTab == NavigationTabId.discover,
                                         onTap: () => widget.onDestinationSelected(NavigationTabId.discover),
                                         focusNode: _focusTracker.get(_kHome),
@@ -1041,6 +1046,14 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
                                         isCollapsed: isCollapsed,
                                       ),
                                       const SizedBox(height: _itemGap),
+                                      if (Platform.isWindows)
+                                        const Padding(
+                                          padding: EdgeInsets.fromLTRB(18, 20, 0, 12),
+                                          child: Text(
+                                            'Plex',
+                                            style: TextStyle(color: Color(0xFFE5A00D), fontSize: 17),
+                                          ),
+                                        ),
                                       if (context.watch<MultiServerProvider>().hasLiveTv) ...[
                                         _buildNavItem(
                                           icon: Symbols.live_tv_rounded,
@@ -1057,7 +1070,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
                                         _buildNavItem(
                                           icon: Symbols.explore_rounded,
                                           selectedIcon: Symbols.explore_rounded,
-                                          label: Translations.of(context).navigation.explore,
+                                          label: Platform.isWindows ? 'Watchlist' : Translations.of(context).navigation.explore,
                                           isSelected: widget.selectedTab == NavigationTabId.explore,
                                           onTap: () => widget.onDestinationSelected(NavigationTabId.explore),
                                           focusNode: _focusTracker.get(_kExplore),
@@ -1141,7 +1154,10 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
       selectedIcon: selectedIcon,
       label: Text(
         label,
-        style: TextStyle(fontSize: 14, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400),
+        style: TextStyle(
+          fontSize: Platform.isWindows ? 17 : 14,
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+        ),
         overflow: .ellipsis,
         maxLines: 1,
       ),
@@ -1519,9 +1535,9 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
           Text(
             library.title,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: Platform.isWindows ? 17 : 13,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? t.text : t.textMuted,
+              color: isSelected && Platform.isWindows ? t.accent : (isSelected ? t.text : t.textMuted),
             ),
             overflow: .ellipsis,
           ),
@@ -1538,7 +1554,7 @@ class SideNavigationRailState extends State<SideNavigationRail> with MountedSetS
       focusNode: focusNode,
       iconSize: 18,
       expandedHeight: 40,
-      suppressSelectedBackground: widget.isSidebarFocused,
+      suppressSelectedBackground: widget.isSidebarFocused && !Platform.isWindows,
       onNavigateRight: widget.onNavigateToContent,
     );
   }
