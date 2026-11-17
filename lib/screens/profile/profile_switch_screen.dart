@@ -205,7 +205,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen> with MountedS
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: onSelect,
-            onLongPress: widget.requireSelection ? null : () => _openProfileMenu(profile),
+            onLongPress: widget.requireSelection ? null : () => _manageProfile(profile),
             child: Column(
               children: [
                 Expanded(
