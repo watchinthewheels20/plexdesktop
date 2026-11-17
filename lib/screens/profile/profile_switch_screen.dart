@@ -151,7 +151,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen> with MountedS
           padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 72),
           child: Center(
             child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: (viewport.maxHeight - 144).clamp(0.0, double.infinity)),
+              constraints: BoxConstraints(minHeight: viewport.maxHeight > 144 ? viewport.maxHeight - 144 : 0.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -196,7 +196,7 @@ class _ProfileSwitchScreenState extends State<ProfileSwitchScreen> with MountedS
         useBackgroundFocus: true,
         borderRadius: 4,
         onSelect: onSelect,
-        onLongPress: widget.requireSelection ? null : () => _openProfileMenu(profile),
+        onLongPress: widget.requireSelection ? null : () => _manageProfile(profile),
         child: Material(
           color: const Color(0xFF242424),
           borderRadius: BorderRadius.circular(4),
