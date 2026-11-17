@@ -37,6 +37,7 @@ import '../navigation/settings_shortcut.dart';
 import '../profiles/active_profile_binder.dart';
 import '../connection/connection_registry.dart';
 import '../profiles/active_profile_provider.dart';
+import '../profiles/profile_avatar.dart';
 import '../profiles/plex_home_service.dart';
 import '../profiles/profile_selection_policy.dart';
 import '../providers/catalog_sources_provider.dart';
@@ -2059,13 +2060,109 @@ class _MainScreenState extends State<MainScreen>
     return CoveredRouteFocusBoundary(child: _buildContent(context, useSideNav));
   }
 
+  /// Full-width Plex Web-style toolbar above the fixed navigation sidebar.
+  /// Actions reuse the existing search, settings and Plex Home workflows.
+  Widget _buildPlexWebTopBar(BuildContext context) {
+    final activeProvider = context.watch<ActiveProfileProvider>();
+    final profile = activeProvider.active;
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: const Color(0xFF101010),
+      child: SizedBox(
+        height: 72,
+        child: Row(
+          children: [
+            IconButton(
+              tooltip: 'Focus navigation',
+              onPressed: _focusSidebar,
+              icon: const Icon(Icons.menu, size: 28),
+            ),
+            const SizedBox(width: 20),
+            const Text(
+              'LoungeMedia',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 27,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -1,
+              ),
+            ),
+            const SizedBox(width: 32),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: Material(
+                    color: const Color(0xFF292929),
+                    borderRadius: BorderRadius.circular(24),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(24),
+                      onTap: () {
+                        _selectTab(NavigationTabId.search);
+                        _focusContent(restorePreviousFocus: false);
+                      },
+                      child: const SizedBox(
+                        height: 45,
+                        child: Row(
+                          children: [
+                            SizedBox(width: 14),
+                            Icon(Icons.search, size: 25, color: Colors.white70),
+                            SizedBox(width: 12),
+                            Text('Search', style: TextStyle(color: Colors.white54, fontSize: 15)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+              tooltip: 'Settings',
+              onPressed: _openSettings,
+              icon: Icon(Icons.build_outlined, color: scheme.onSurfaceVariant, size: 27),
+            ),
+            IconButton(
+              tooltip: 'Fullscreen',
+              onPressed: () => unawaited(FullscreenStateManager().toggleFullscreen()),
+              icon: Icon(Icons.cast_connected_outlined, color: scheme.onSurfaceVariant, size: 27),
+            ),
+            const SizedBox(width: 16),
+            Tooltip(
+              message: 'Switch user',
+              child: InkWell(
+                onTap: () => unawaited(_pushProfileSelection()),
+                child: profile == null
+                    ? const CircleAvatar(radius: 19, child: Icon(Icons.person))
+                    : ProfileAvatar(
+                        profile: profile,
+                        avatarUrl: activeProvider.avatarUrlFor(profile.id),
+                        size: 38,
+                      ),
+              ),
+            ),
+            IconButton(
+              tooltip: 'Switch user',
+              onPressed: () => unawaited(_pushProfileSelection()),
+              icon: const Icon(Icons.keyboard_arrow_down, size: 22),
+            ),
+            const SizedBox(width: 12),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildContent(BuildContext context, bool useSideNav) {
     if (useSideNav) {
       return SettingValueBuilder<bool>(
         pref: SettingsService.alwaysKeepSidebarOpen,
         builder: (context, alwaysExpanded, _) {
-          final targetContentOffset = _sideNavigationWidth(context, alwaysExpanded: alwaysExpanded);
-          final reservedContentOffset = alwaysExpanded
+          // Plex Web keeps a persistent pinned sidebar beside the content.
+          final keepExpanded = Platform.isWindows || alwaysExpanded;
+          final targetContentOffset = _sideNavigationWidth(context, alwaysExpanded: keepExpanded);
+          final reservedContentOffset = keepExpanded
               ? SideNavigationRailState.expandedWidth
               : SideNavigationRailState.collapsedWidthForContext(context);
 
@@ -2119,7 +2216,7 @@ class _MainScreenState extends State<MainScreen>
                         children: [
                           Positioned.fill(child: ColoredBox(color: Theme.of(context).scaffoldBackgroundColor)),
                           Positioned(
-                            top: 0,
+                            top: Platform.isWindows ? 72 : 0,
                             bottom: 0,
                             left: contentLayout.left,
                             width: contentLayout.width,
@@ -2147,7 +2244,11 @@ class _MainScreenState extends State<MainScreen>
                           // Scrim behind the modal (hover/touch) rail
                           // overlay; purely visual so content stays
                           // interactive and hover-out still collapses.
-                          Positioned.fill(
+                          Positioned(
+                            top: Platform.isWindows ? 72 : 0,
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
                             child: IgnorePointer(
                               child: AnimatedOpacity(
                                 opacity: _isSidebarFloatingPanel ? 1.0 : 0.0,
@@ -2158,7 +2259,7 @@ class _MainScreenState extends State<MainScreen>
                             ),
                           ),
                           Positioned(
-                            top: 0,
+                            top: Platform.isWindows ? 72 : 0,
                             bottom: 0,
                             left: 0,
                             child: FocusScope(
@@ -2169,7 +2270,7 @@ class _MainScreenState extends State<MainScreen>
                                 selectedLibraryKey: _selectedLibraryGlobalKey,
                                 isOfflineMode: _isOffline,
                                 isSidebarFocused: _isSidebarFocused,
-                                alwaysExpanded: alwaysExpanded,
+                                alwaysExpanded: keepExpanded,
                                 isReconnecting: _isReconnecting,
                                 onDestinationSelected: (tab) {
                                   final restorePreviousFocus = tab == _currentTab;
@@ -2189,6 +2290,13 @@ class _MainScreenState extends State<MainScreen>
                               ),
                             ),
                           ),
+                          if (Platform.isWindows)
+                            Positioned(
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              child: _buildPlexWebTopBar(context),
+                            ),
                         ],
                       ),
                     ),
