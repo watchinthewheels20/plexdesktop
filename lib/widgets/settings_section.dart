@@ -64,6 +64,32 @@ class SettingsGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
+    if (Theme.of(context).platform == TargetPlatform.windows) {
+      // Plex Web presents settings as flat, separated rows rather than
+      // Plezy's individual Material Expressive rounded cards.
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (title != null) SettingsSectionHeader(title!),
+          Padding(
+            padding: margin,
+            child: Material(
+              color: t.surface,
+              borderRadius: BorderRadius.circular(3),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  for (var i = 0; i < children.length; i++) ...[
+                    if (i > 0) Divider(height: 1, color: t.outline),
+                    children[i],
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: .start,
       children: [
